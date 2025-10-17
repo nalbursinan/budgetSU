@@ -40,7 +40,7 @@ It automatically detects if a transaction occurred inside or outside the campus 
 | **Berat Kumru** | **Testing & Quality Assurance Lead** | Tests app functionality and maintains quality standards. |
 | **Kaan Ispiroğlu** | **Learning & Research Lead** | Researches relevant Flutter libraries, APIs, and new tools. |
 | **Elif Öztoprak** | **Presentation & Communication Lead** | Prepares presentations and communicates project updates. |
-| *(Vacant)* | **Integration & Repository Lead** | Manages Git/GitHub repository, merging, and version control. |
+| *(Sinan Nalbur)* | **Integration & Repository Lead** | Manages Git/GitHub repository, merging, and version control. |
 
 ---
 
