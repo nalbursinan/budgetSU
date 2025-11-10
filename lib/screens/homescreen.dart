@@ -48,9 +48,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               children: [
                 _buildHeader(),
                 const SizedBox(height: 24),
-                _buildTodaySpendingCard(),
+                _buildTodaySpendingCard(dailyLimit: 100, todaySpending: 100),
                 const SizedBox(height: 24),
-                _buildTotalBalanceCard(),
+                _buildTotalBalanceCard(totalBalance: 500,totalIncome: 800,totalExpenses: 300),
                 const SizedBox(height: 24),
                 _buildCategoryBreakdownCard(),
                 const SizedBox(height: 24),
@@ -67,12 +67,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader() { // header
     return FadeTransition(
       opacity: _animationController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text(
             'BudgetSU',
             style: TextStyle(
@@ -95,7 +95,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildTodaySpendingCard() {
+  Widget _buildTodaySpendingCard({required double todaySpending,required double dailyLimit,}) { //todays spending
+
+    final double progress = (dailyLimit > 0) ? todaySpending / dailyLimit : 0.0;
+    // Kalan miktar
+    final double remaining = dailyLimit - todaySpending;
     return SlideTransition(
       position: Tween<Offset>(
         begin: const Offset(0, 0.3),
@@ -136,9 +140,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               const SizedBox(height: 24),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
+                children: [
                   Text(
-                    '\$ 0.00',
+                    '\$${todaySpending.toStringAsFixed(2)}',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 48,
@@ -149,7 +153,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   Padding(
                     padding: EdgeInsets.only(bottom: 12),
                     child: Text(
-                      '/ \$50.00',
+                      '/ \$${dailyLimit.toStringAsFixed(2)}',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 20,
@@ -163,7 +167,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(
-                  value: 0.0,
+                  value: progress,
                   backgroundColor: Colors.white.withOpacity(0.3),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   minHeight: 8,
@@ -173,8 +177,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '\$50.00 remaining today',
+                   Text(
+                    '\$${remaining.toStringAsFixed(2)} remaining today',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -208,7 +212,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildTotalBalanceCard() {
+  Widget _buildTotalBalanceCard({required double totalBalance, required double totalIncome, required double totalExpenses,}) {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -331,7 +335,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildCategoryBreakdownCard() {
+  Widget _buildCategoryBreakdownCard() { //Categorical expenses card
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -350,7 +354,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Category Breakdown',
+              'Categorical Expenses',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
