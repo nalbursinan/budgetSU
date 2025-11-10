@@ -59,7 +59,7 @@ class _MainScreenState extends State<MainScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(Icons.home, 'Homooe', 0),
+              _buildNavItem(Icons.home, 'Home', 0),
               _buildNavItem(Icons.receipt_long, 'Transactions', 1),
               _buildNavItem(Icons.bar_chart, 'Analytics', 2),
               _buildNavItem(Icons.track_changes, 'Goals', 3),
