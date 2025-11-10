@@ -1,30 +1,31 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
+import '../lib/screens/mainscreen.dart';
+import 'transactions.dart';
+import 'homescreen.dart';
 
-import 'package:budget_su/main.dart';
+
+//import '../lib/screens/analytics.dart';
+//import '../lib/screens/goals.dart';
+//import '../lib/screens/settings.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  runApp(const BudgetSUApp());
+}
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+class BudgetSUApp extends StatelessWidget {
+  const BudgetSUApp({Key? key}) : super(key: key);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'BudgetSU',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+        fontFamily: 'SF Pro Display',
+      ),
+      home: const MainScreen(), // 👈 artık initialRoute yerine MainScreen
+    );
+  }
 }

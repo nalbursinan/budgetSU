@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'mainscreen.dart';
 import 'transactions.dart';
 
-class TransactionsScreen extends StatelessWidget {
-  const TransactionsScreen({Key? key}) : super(key: key);
+class GoalsScreen extends StatelessWidget {
+  const GoalsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return const Center(
       child: Text(
-        'Transactions Page',
+        'Goals Page',
         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
       ),
     );

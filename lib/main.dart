@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
-import 'screens/homescreen.dart';
+import './screens/transactions.dart';
+import './screens/mainscreen.dart';
+import './screens/homescreen.dart';
+
+
+//import '../lib/screens/analytics.dart';
+//import '../lib/screens/goals.dart';
+//import '../lib/screens/settings.dart';
+
 void main() {
   runApp(const BudgetSUApp());
 }
@@ -17,7 +25,7 @@ class BudgetSUApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF5F5F5),
         fontFamily: 'SF Pro Display',
       ),
-      home: const HomePage(),
+      home: const MainScreen(), // 👈 artık initialRoute yerine MainScreen
     );
   }
 }

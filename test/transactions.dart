@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'mainscreen.dart';
+import '../lib/screens/mainscreen.dart';
 import 'transactions.dart';
 
 class TransactionsScreen extends StatelessWidget {
