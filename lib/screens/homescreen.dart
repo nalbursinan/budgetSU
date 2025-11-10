@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//Ozan Kaçmaz
+//Ozan Kaçmaz homescreen template
 
 
 
