@@ -5,7 +5,7 @@ Sinan Nalbur (32369)
 Ozan Kaçmaz (32123)  
 Berat Kumru (31906)  
 Kaan Ispiroğlu (32010)  
-Elif Öztoprak (32407)
+Fatma Elif Öztoprak (32407)
 
 ---
 
