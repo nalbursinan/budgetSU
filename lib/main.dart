@@ -7,6 +7,9 @@ import './screens/homescreen.dart';
 //import '../lib/screens/analytics.dart';
 //import '../lib/screens/goals.dart';
 //import '../lib/screens/settings.dart';
+// ===== Transaction Model =====
+
+
 
 void main() {
   runApp(const BudgetSUApp());
