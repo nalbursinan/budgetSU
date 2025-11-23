@@ -147,8 +147,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       padding: const EdgeInsets.all(6),
       child: Row(
         children: [
-          _toggleButton("Daily"),
           _toggleButton("Hours"),
+          _toggleButton("Daily"),
           _toggleButton("Weekly"),
         ],
       ),
