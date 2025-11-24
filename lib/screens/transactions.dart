@@ -36,19 +36,19 @@ const List<String> onCampusCoffeePlaces = [
   'Espressolab',
 ];
 
-/// Off-campus yemek yerleri (şimdilik örnek, istersen değiştir)
+/// Off-campus yemek yerleri
 const List<String> offCampusFoodPlaces = [
   'Off-campus Food 1',
   'Off-campus Food 2',
 ];
 
-/// Off-campus kahve yerleri (şimdilik örnek)
+/// Off-campus kahve yerleri
 const List<String> offCampusCoffeePlaces = [
   'Off-campus Coffee 1',
   'Off-campus Coffee 2',
 ];
 
-/// On-campus’ta gözükecek gider kategorileri
+/// On-campus gider kategorileri
 const List<String> onCampusCategories = [
   'Food',
   'Coffee',
@@ -57,7 +57,7 @@ const List<String> onCampusCategories = [
   'Other',
 ];
 
-/// Off-campus’ta gözükecek gider kategorileri
+/// Off-campus gider kategorileri
 const List<String> offCampusCategories = [
   'Food',
   'Coffee',
@@ -87,12 +87,12 @@ const List<String> offCampusIncomeCategories = [
 /// =======================================================
 
 class TransactionModel {
-  final String title; // örn: "Campus Cafeteria"
-  final String category; // Food, Coffee, Transport, ...
-  final double amount; // her zaman pozitif tutuluyor
-  final bool isIncome; // true = gelir, false = gider
-  final String campusLocation; // "On-Campus", "Off-Campus"
-  final DateTime date; // işlem tarihi
+  final String title;
+  final String category;
+  final double amount;
+  final bool isIncome;
+  final String campusLocation;
+  final DateTime date;
 
   TransactionModel({
     required this.title,
@@ -105,7 +105,7 @@ class TransactionModel {
 }
 
 /// =======================================================
-/// TRANSACTIONS SCREEN (EMPTY START)
+/// TRANSACTIONS SCREEN
 /// =======================================================
 
 class TransactionsScreen extends StatefulWidget {
@@ -140,20 +140,17 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   String formatDate(DateTime d) {
-    String two(int x) => x.toString().padLeft(2, '0');
-    return "${two(d.day)}.${two(d.month)}.${d.year}";
+    return "${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}";
   }
 
   @override
   Widget build(BuildContext context) {
-    // Tarihe göre gruplama
     final Map<String, List<TransactionModel>> groups = {};
     for (var tx in transactions) {
       final key = formatDate(tx.date);
       groups.putIfAbsent(key, () => []).add(tx);
     }
-    final dates = groups.keys.toList()
-      ..sort((a, b) => a.compareTo(b)); // istersen tersine çevirebilirsin
+    final dates = groups.keys.toList()..sort();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -163,7 +160,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ----- HEADER -----
+              // HEADER
               Row(
                 children: [
                   Expanded(
@@ -197,17 +194,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ----- EMPTY STATE / LIST -----
+              // EMPTY / LIST
               if (transactions.isEmpty)
                 Expanded(
                   child: Center(
                     child: Text(
                       "No transactions yet.\nTap + to add your first one!",
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 15,
-                      ),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 15),
                     ),
                   ),
                 )
@@ -255,7 +249,6 @@ class TransactionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool onCampus = tx.campusLocation == "On-Campus";
-    bool offCampus = tx.campusLocation == "Off-Campus";
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -282,64 +275,59 @@ class TransactionCard extends StatelessWidget {
                   children: [
                     Text(
                       tx.category,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 13,
-                      ),
+                      style:
+                      TextStyle(color: Colors.grey[600], fontSize: 13),
                     ),
-                    if (onCampus || offCampus) ...[
-                      const SizedBox(width: 6),
-                      const Text(
-                        "•",
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                    const SizedBox(width: 6),
+                    const Text("•",
+                        style: TextStyle(fontSize: 10, color: Colors.grey)),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: onCampus
+                            ? AppColors.onCampusBg
+                            : AppColors.offCampusBg,
+                        borderRadius: BorderRadius.circular(999),
                       ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: onCampus
-                              ? AppColors.onCampusBg
-                              : AppColors.offCampusBg,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              onCampus
-                                  ? Icons.apartment
-                                  : Icons.location_on_outlined,
-                              size: 14,
+                      child: Row(
+                        children: [
+                          Icon(
+                            onCampus
+                                ? Icons.apartment
+                                : Icons.location_on_outlined,
+                            size: 14,
+                            color: onCampus
+                                ? AppColors.onCampusText
+                                : AppColors.offCampusText,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            tx.campusLocation,
+                            style: TextStyle(
+                              fontSize: 12,
                               color: onCampus
                                   ? AppColors.onCampusText
                                   : AppColors.offCampusText,
+                              fontWeight: FontWeight.w500,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              tx.campusLocation,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: onCampus
-                                    ? AppColors.onCampusText
-                                    : AppColors.offCampusText,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ],
             ),
           ),
 
-          // AMOUNT
+          // RIGHT SIDE
           Text(
             "${tx.isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}",
             style: TextStyle(
-              color: tx.isIncome ? Colors.green[600] : Colors.red[600],
+              color:
+              tx.isIncome ? Colors.green[600] : Colors.red[600],
               fontWeight: FontWeight.w700,
               fontSize: 15,
             ),
@@ -365,13 +353,15 @@ class AddTransactionSheet extends StatefulWidget {
 }
 
 class _AddTransactionSheetState extends State<AddTransactionSheet> {
-  String type = "Expense"; // Expense / Income
-  String? category; // Food, Coffee, ...
+  String type = "Expense";
+  String? category;
   bool isOnCampus = true;
-  String? campusPlace; // seçilen mekan
+  String? campusPlace;
 
   final descCtrl = TextEditingController();
   final amountCtrl = TextEditingController();
+
+  bool amountError = false;
 
   InputDecoration box(String hint) {
     return InputDecoration(
@@ -379,16 +369,13 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
       filled: true,
       fillColor: const Color(0xFFF3F3F3),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
+          borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       contentPadding:
       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
   }
 
-  /// Kategori + On/Off-campus'a göre doğru mekan listesini seç (sadece Food/Coffee için)
-  List<String> _getCurrentPlaceList() {
+  List<String> _getPlaceList() {
     if (category == "Food") {
       return isOnCampus ? onCampusFoodPlaces : offCampusFoodPlaces;
     }
@@ -399,25 +386,21 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   }
 
   void submit() {
-    if (descCtrl.text.isEmpty ||
-        amountCtrl.text.isEmpty ||
-        category == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields.")),
-      );
-      return;
-    }
+    final amount = double.tryParse(amountCtrl.text.trim());
+    final invalidAmount = amount == null;
+    final missingFields =
+        descCtrl.text.trim().isEmpty || category == null;
 
-    final amount = double.tryParse(amountCtrl.text);
-    if (amount == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid amount.")),
-      );
+    if (invalidAmount || missingFields) {
+      setState(() {
+        amountError = invalidAmount;
+      });
+      // sadece inline hata, ekleme yok
       return;
     }
 
     final tx = TransactionModel(
-      title: descCtrl.text,
+      title: descCtrl.text.trim(),
       category: category!,
       amount: amount,
       isIncome: type == "Income",
@@ -432,288 +415,211 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
 
-    // Food veya Coffee seçiliyse mekan dropdown'u gözüksün
-    final bool showPlaceDropdown =
-        category == "Food" || category == "Coffee";
+    final currentCategories = (type == "Expense")
+        ? (isOnCampus ? onCampusCategories : offCampusCategories)
+        : (isOnCampus ? onCampusIncomeCategories : offCampusIncomeCategories);
 
-    final String placeLabel =
-    isOnCampus ? "On-Campus place" : "Off-Campus place";
-
-    // Şu anki tipe ve location'a göre hangi kategori listesi?
-    final List<String> currentCategories = () {
-      if (type == "Expense") {
-        return isOnCampus ? onCampusCategories : offCampusCategories;
-      } else {
-        return isOnCampus
-            ? onCampusIncomeCategories
-            : offCampusIncomeCategories;
-      }
-    }();
+    final showPlaceDropdown =
+        (category == "Food" || category == "Coffee") && type == "Expense";
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottom),
       child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(22.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // HEADER
-              Row(
-                children: [
-                  const Text(
-                    "Add Transaction",
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // HEADER
+            Row(
+              children: [
+                const Text("Add Transaction",
                     style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close),
+                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Spacer(),
+                IconButton(
                     onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // TYPE
-              const Text("Type"),
-              const SizedBox(height: 6),
-              DropdownButtonFormField<String>(
-                decoration: box(""),
-                value: type,
-                items: const [
-                  DropdownMenuItem(
-                      value: "Expense", child: Text("Expense")),
-                  DropdownMenuItem(
-                      value: "Income", child: Text("Income")),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() {
-                    type = value;
-
-                    // Yeni tipe göre geçerli kategori listesini hesapla
-                    final allowed = type == "Expense"
-                        ? (isOnCampus
-                        ? onCampusCategories
-                        : offCampusCategories)
-                        : (isOnCampus
-                        ? onCampusIncomeCategories
-                        : offCampusIncomeCategories);
-
-                    // Seçili kategori artık geçerli değilse sıfırla
-                    if (category != null && !allowed.contains(category)) {
-                      category = null;
-                    }
-
-                    // Income'da Food/Coffee yoksa place dropdown da zaten görünmez
-                    campusPlace = null;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // DESCRIPTION
-              const Text("Description"),
-              const SizedBox(height: 6),
-              TextField(
-                controller: descCtrl,
-                decoration: box("e.g., Bus Ticket"),
-              ),
-              const SizedBox(height: 16),
-
-              // AMOUNT
-              const Text("Amount"),
-              const SizedBox(height: 6),
-              TextField(
-                controller: amountCtrl,
-                decoration: box("0.00"),
-                keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
-              ),
-              const SizedBox(height: 16),
-
-              // CATEGORY
-              const Text("Category"),
-              const SizedBox(height: 6),
-              DropdownButtonFormField<String>(
-                decoration: box("Select category"),
-                value: category,
-                items: currentCategories
-                    .map(
-                      (c) => DropdownMenuItem<String>(
-                    value: c,
-                    child: Text(c),
-                  ),
-                )
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    category = value;
-                    campusPlace = null; // kategori değişince mekan sıfırla
-                  });
-                },
-              ),
-
-              // PLACE DROPDOWN (Food / Coffee + Expense ise)
-              if (showPlaceDropdown && type == "Expense") ...[
-                const SizedBox(height: 16),
-                Text(placeLabel),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  value: campusPlace,
-                  decoration: box("Select place"),
-                  items: _getCurrentPlaceList()
-                      .map(
-                        (p) => DropdownMenuItem<String>(
-                      value: p,
-                      child: Text(p),
-                    ),
-                  )
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() => campusPlace = value);
-                    // description boşsa oto-doldur
-                    if (value != null && descCtrl.text.trim().isEmpty) {
-                      descCtrl.text = value;
-                    }
-                  },
-                ),
+                    icon: const Icon(Icons.close)),
               ],
+            ),
+            const SizedBox(height: 16),
 
+            // TYPE
+            const Text("Type"),
+            const SizedBox(height: 6),
+            DropdownButtonFormField(
+              value: type,
+              decoration: box(""),
+              items: const [
+                DropdownMenuItem(value: "Expense", child: Text("Expense")),
+                DropdownMenuItem(value: "Income", child: Text("Income")),
+              ],
+              onChanged: (v) {
+                setState(() {
+                  type = v!;
+                  category = null;
+                  campusPlace = null;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // DESCRIPTION
+            const Text("Description"),
+            const SizedBox(height: 6),
+            TextField(controller: descCtrl, decoration: box("e.g., Bus Ticket")),
+            const SizedBox(height: 16),
+
+            // AMOUNT
+            const Text("Amount"),
+            const SizedBox(height: 6),
+            TextField(
+              controller: amountCtrl,
+              decoration: box("0.00").copyWith(
+                errorText: amountError ? "Please enter a valid number" : null,
+              ),
+              keyboardType: TextInputType.text,
+              onChanged: (value) {
+                setState(() {
+                  if (value.trim().isEmpty) {
+                    amountError = true;
+                  } else if (double.tryParse(value) == null) {
+                    amountError = true;
+                  } else {
+                    amountError = false;
+                  }
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // CATEGORY
+            const Text("Category"),
+            const SizedBox(height: 6),
+            DropdownButtonFormField(
+              value: category,
+              decoration: box("Select category"),
+              items: currentCategories
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
+              onChanged: (v) {
+                setState(() {
+                  category = v;
+                  campusPlace = null;
+                });
+              },
+            ),
+
+            // PLACES
+            if (showPlaceDropdown) ...[
               const SizedBox(height: 16),
+              Text(isOnCampus ? "On-Campus place" : "Off-Campus place"),
+              const SizedBox(height: 6),
+              DropdownButtonFormField(
+                value: campusPlace,
+                decoration: box("Select place"),
+                items: _getPlaceList()
+                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                    .toList(),
+                onChanged: (v) {
+                  setState(() {
+                    campusPlace = v;
+                    if (descCtrl.text.trim().isEmpty && v != null) {
+                      descCtrl.text = v;
+                    }
+                  });
+                },
+              ),
+            ],
 
-              // LOCATION
-              const Text("Location"),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() {
-                        isOnCampus = true;
-                        campusPlace = null;
+            const SizedBox(height: 16),
 
-                        final allowed = type == "Expense"
-                            ? onCampusCategories
-                            : onCampusIncomeCategories;
-                        if (category != null &&
-                            !allowed.contains(category)) {
-                          category = null;
-                        }
-                      }),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: isOnCampus
-                              ? AppColors.primaryPurple
-                              : Colors.white,
-                          borderRadius: const BorderRadius.horizontal(
-                            left: Radius.circular(14),
-                          ),
-                          border: Border.all(color: AppColors.primaryPurple),
+            // LOCATION
+            const Text("Location"),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() {
+                      isOnCampus = true;
+                      category = null;
+                      campusPlace = null;
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isOnCampus
+                            ? AppColors.primaryPurple
+                            : Colors.white,
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(14),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.apartment,
+                        border:
+                        Border.all(color: AppColors.primaryPurple),
+                      ),
+                      child: Center(
+                        child: Text("On-Campus",
+                            style: TextStyle(
                               color: isOnCampus
                                   ? Colors.white
                                   : AppColors.primaryPurple,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              "On-Campus",
-                              style: TextStyle(
-                                color: isOnCampus
-                                    ? Colors.white
-                                    : AppColors.primaryPurple,
-                              ),
-                            ),
-                          ],
-                        ),
+                            )),
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() {
-                        isOnCampus = false;
-                        campusPlace = null;
-
-                        final allowed = type == "Expense"
-                            ? offCampusCategories
-                            : offCampusIncomeCategories;
-                        if (category != null &&
-                            !allowed.contains(category)) {
-                          category = null;
-                        }
-                      }),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: !isOnCampus
-                              ? AppColors.primaryPurple
-                              : Colors.white,
-                          borderRadius: const BorderRadius.horizontal(
-                            right: Radius.circular(14),
-                          ),
-                          border: Border.all(color: AppColors.primaryPurple),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() {
+                      isOnCampus = false;
+                      category = null;
+                      campusPlace = null;
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: !isOnCampus
+                            ? AppColors.primaryPurple
+                            : Colors.white,
+                        borderRadius: const BorderRadius.horizontal(
+                          right: Radius.circular(14),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.location_on_outlined,
+                        border:
+                        Border.all(color: AppColors.primaryPurple),
+                      ),
+                      child: Center(
+                        child: Text("Off-Campus",
+                            style: TextStyle(
                               color: !isOnCampus
                                   ? Colors.white
                                   : AppColors.primaryPurple,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              "Off-Campus",
-                              style: TextStyle(
-                                color: !isOnCampus
-                                    ? Colors.white
-                                    : AppColors.primaryPurple,
-                              ),
-                            ),
-                          ],
-                        ),
+                            )),
                       ),
                     ),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 22),
-
-              // SUBMIT BUTTON
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryPurple,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text(
-                    "Add Transaction",
-                    style: TextStyle(fontSize: 16),
-                  ),
                 ),
-              ),
+              ],
+            ),
 
-              const SizedBox(height: 10),
-            ],
-          ),
+            const SizedBox(height: 22),
+
+            // SUBMIT
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryPurple,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                child: const Text("Add Transaction",
+                    style: TextStyle(fontSize: 16)),
+              ),
+            ),
+          ],
         ),
       ),
     );
