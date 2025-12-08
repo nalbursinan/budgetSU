@@ -246,48 +246,58 @@ class _GoalsScreenState extends State<GoalsScreen> {
     final achievementsCount = completedGoals.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EFFF),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        toolbarHeight: 80,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Goals',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Track your savings targets',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0, top: 10.0),
+            child: InkWell(
+              onTap: _showAddGoalDialog,
+              borderRadius: BorderRadius.circular(20),
+              child: const CircleAvatar(
+                radius: 20,
+                backgroundColor: Color(0xFF6A4DBC),
+                child: Icon(Icons.add, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Goals',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF3B228A),
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Track your savings targets',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF7A6AB5),
-                      ),
-                    ),
-                  ],
-                ),
-                InkWell(
-                  onTap: _showAddGoalDialog,
-                  borderRadius: BorderRadius.circular(20),
-                  child: const CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Color(0xFF6A4DBC),
-                    child: Icon(Icons.add, color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
@@ -319,12 +329,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
               ],
             ),
             const SizedBox(height: 24),
+            // BURASI GÜNCELLENDİ
             const Text(
               'Active Goals',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF3B228A),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
               ),
             ),
             const SizedBox(height: 12),
@@ -363,12 +374,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     .toList(),
               ),
             const SizedBox(height: 24),
+            // BURASI GÜNCELLENDİ
             const Text(
               'Achievements',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF3B228A),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
               ),
             ),
             const SizedBox(height: 12),
