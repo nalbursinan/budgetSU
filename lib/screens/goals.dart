@@ -46,13 +46,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
             children: completedGoals
                 .map(
                   (g) => ListTile(
-                    leading: const Icon(Icons.check_circle, color: Colors.green),
-                    title: Text(g.title),
-                    subtitle: Text(
-                      '\$${g.current.toStringAsFixed(2)} / \$${g.target.toStringAsFixed(2)}',
-                    ),
-                  ),
-                )
+                leading: const Icon(Icons.check_circle, color: Colors.green),
+                title: Text(g.title),
+                subtitle: Text(
+                  '\$${g.current.toStringAsFixed(2)} / \$${g.target.toStringAsFixed(2)}',
+                ),
+              ),
+            )
                 .toList(),
           ),
         );
@@ -83,7 +83,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   TextField(
                     controller: targetController,
                     keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (value) {
                       setStateDialog(() {
                         if (value.isEmpty) {
@@ -96,7 +96,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                       });
                     },
                     decoration:
-                        const InputDecoration(labelText: 'Target amount'),
+                    const InputDecoration(labelText: 'Target amount'),
                   ),
                   if (targetError != null)
                     Padding(
@@ -170,7 +170,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   TextField(
                     controller: progressController,
                     keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (value) {
                       setStateDialog(() {
                         if (value.isEmpty) {
@@ -183,7 +183,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                       });
                     },
                     decoration:
-                        const InputDecoration(labelText: 'Amount to add'),
+                    const InputDecoration(labelText: 'Amount to add'),
                   ),
                   if (progressError != null)
                     Padding(
@@ -246,203 +246,194 @@ class _GoalsScreenState extends State<GoalsScreen> {
     final achievementsCount = completedGoals.length;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        toolbarHeight: 80,
-        title: Padding(
-          padding: const EdgeInsets.only(top: 12.0),
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Analytics-style header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Goals",
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "Track your savings targets",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  InkWell(
+                    onTap: _showAddGoalDialog,
+                    borderRadius: BorderRadius.circular(20),
+                    child: const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Color(0xFF6A4DBC),
+                      child: Icon(Icons.add, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: _SummaryCard(
+                      icon: Icons.track_changes,
+                      value: activeCount.toString(),
+                      label: 'Active Goals',
+                      onTap: null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _SummaryCard(
+                      icon: Icons.check_circle_outline,
+                      value: completedCount.toString(),
+                      label: 'Completed',
+                      onTap: () => _showCompletedGoals(completedGoals),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _SummaryCard(
+                      icon: Icons.emoji_events_outlined,
+                      value: achievementsCount.toString(),
+                      label: 'Achievements',
+                      onTap: null,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
               const Text(
-                'Goals',
+                'Active Goals',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Track your savings targets',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0, top: 10.0),
-            child: InkWell(
-              onTap: _showAddGoalDialog,
-              borderRadius: BorderRadius.circular(20),
-              child: const CircleAvatar(
-                radius: 20,
-                backgroundColor: Color(0xFF6A4DBC),
-                child: Icon(Icons.add, color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: _SummaryCard(
-                    icon: Icons.track_changes,
-                    value: activeCount.toString(),
-                    label: 'Active Goals',
-                    onTap: null,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _SummaryCard(
-                    icon: Icons.check_circle_outline,
-                    value: completedCount.toString(),
-                    label: 'Completed',
-                    onTap: () => _showCompletedGoals(completedGoals),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _SummaryCard(
-                    icon: Icons.emoji_events_outlined,
-                    value: achievementsCount.toString(),
-                    label: 'Achievements',
-                    onTap: null,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            // BURASI GÜNCELLENDİ
-            const Text(
-              'Active Goals',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (activeGoals.isEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 8,
-                      color: Colors.black.withOpacity(0.05),
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Text(
-                  'No active goals yet.\nTap the + button to add your first goal.',
-                  style: TextStyle(fontSize: 14),
-                ),
-              )
-            else
-              Column(
-                children: activeGoals
-                    .map(
-                      (goal) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _GoalCard(
-                          goal: goal,
-                          onAddProgress: () => _showAddProgressDialog(goal),
-                        ),
+              const SizedBox(height: 12),
+              if (activeGoals.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 8,
+                        color: Colors.black.withOpacity(0.05),
+                        offset: const Offset(0, 4),
                       ),
-                    )
-                    .toList(),
-              ),
-            const SizedBox(height: 24),
-            // BURASI GÜNCELLENDİ
-            const Text(
-              'Achievements',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (achievementsCount == 0)
-              Container(
-                width: double.infinity,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 8,
-                      color: Colors.black.withOpacity(0.05),
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(16),
-                child: const Center(
-                  child: Text(
-                    'No achievements yet.\nComplete goals to unlock achievements.',
-                    textAlign: TextAlign.center,
+                    ],
+                  ),
+                  child: const Text(
+                    'No active goals yet.\nTap the + button to add your first goal.',
                     style: TextStyle(fontSize: 14),
                   ),
-                ),
-              )
-            else
-              Container(
-                width: double.infinity,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 8,
-                      color: Colors.black.withOpacity(0.05),
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.emoji_events,
-                      color: Colors.orangeAccent,
-                      size: 32,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '$achievementsCount achievement(s) unlocked!',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
+                )
+              else
+                Column(
+                  children: activeGoals
+                      .map(
+                        (goal) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _GoalCard(
+                        goal: goal,
+                        onAddProgress: () => _showAddProgressDialog(goal),
                       ),
                     ),
-                  ],
+                  )
+                      .toList(),
+                ),
+              const SizedBox(height: 24),
+              const Text(
+                'Achievements',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
               ),
-          ],
+              const SizedBox(height: 12),
+              if (achievementsCount == 0)
+                Container(
+                  width: double.infinity,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 8,
+                        color: Colors.black.withOpacity(0.05),
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: const Center(
+                    child: Text(
+                      'No achievements yet.\nComplete goals to unlock achievements.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 8,
+                        color: Colors.black.withOpacity(0.05),
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.emoji_events,
+                        color: Colors.orangeAccent,
+                        size: 32,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '$achievementsCount achievement(s) unlocked!',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -492,7 +483,7 @@ class _SummaryCard extends StatelessWidget {
               Text(
                 value,
                 style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 2),
               Text(
@@ -569,7 +560,7 @@ class _GoalCard extends StatelessWidget {
               minHeight: 6,
               backgroundColor: Colors.grey[300],
               valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF6A4DBC)),
+              const AlwaysStoppedAnimation<Color>(Color(0xFF6A4DBC)),
             ),
           ),
           const SizedBox(height: 8),
@@ -588,7 +579,7 @@ class _GoalCard extends StatelessWidget {
                   fontSize: 12,
                   color: remaining > 0 ? Colors.grey[700] : Colors.green,
                   fontWeight:
-                      remaining > 0 ? FontWeight.normal : FontWeight.w600,
+                  remaining > 0 ? FontWeight.normal : FontWeight.w600,
                 ),
               ),
             ],

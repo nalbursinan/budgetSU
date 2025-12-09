@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// =======================================================
-/// COLORS
-/// =======================================================
 
 class AppColors {
-  static const Color background = Color(0xFFF5F7FF);
+  static const Color background = Color(0xFFF5F5F5);
 
   static const Color onCampusBg = Color(0xFFE4EEFF);
   static const Color onCampusText = Color(0xFF0F63FF);
@@ -104,9 +101,9 @@ class TransactionModel {
   });
 }
 
-/// =======================================================
+
 /// TRANSACTIONS SCREEN
-/// =======================================================
+
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({Key? key}) : super(key: key);
@@ -156,43 +153,49 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // HEADER
+              // Analytics-style header
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(
-                      "Transactions",
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[900],
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Transactions",
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${transactions.length} total transactions",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  GestureDetector(
+                  InkWell(
                     onTap: openAddSheet,
-                    child: Container(
-                      width: 52,
-                      height: 52,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryPurple,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.add, color: Colors.white),
+                    borderRadius: BorderRadius.circular(20),
+                    child: const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: AppColors.primaryPurple,
+                      child: Icon(Icons.add, color: Colors.white),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
-              Text(
-                "${transactions.length} total",
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // EMPTY / LIST
               if (transactions.isEmpty)
@@ -395,7 +398,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
       setState(() {
         amountError = invalidAmount;
       });
-      // sadece inline hata, ekleme yok
+
       return;
     }
 
