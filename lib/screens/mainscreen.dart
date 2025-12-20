@@ -1,12 +1,9 @@
-import 'package:budget_su/screens/analytics.dart';
-import 'package:budget_su/screens/goals.dart';
-import 'package:budget_su/screens/settings.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'homescreen.dart';
 import 'transactions.dart';
 import 'analytics.dart';
 import 'goals.dart';
+import 'settings.dart';
 
 
 class MainScreen extends StatefulWidget {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'transactions.dart';
 
 // Ozan Kaçmaz homescreen template
 class HomePage extends StatefulWidget {

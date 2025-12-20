@@ -3,13 +3,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
+import 'providers/transaction_provider.dart';
 import 'screens/auth/auth_wrapper.dart';
 
 void main() async {
-  // Flutter engine başlatıldığından emin ol
+  // Ensure Flutter engine is initialized
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Firebase'i başlat
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -25,6 +26,7 @@ class BudgetSUApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => TransactionProvider()),
       ],
       child: MaterialApp(
         title: 'BudgetSU',
