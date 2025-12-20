@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "917808259940",
+    "project_id": "subudget-a8a79",
+    "storage_bucket": "subudget-a8a79.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:917808259940:android:3ed16322413da251d0d071",
+        "android_client_info": {
+          "package_name": "com.example.budget_su"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSa--7z58XRb2k9Sgsy8u_Qeq65tGjIro"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
