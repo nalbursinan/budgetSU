@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/transaction_provider.dart';
 import '../mainscreen.dart';
 import 'login_screen.dart';
 
@@ -20,13 +21,44 @@ class AuthWrapper extends StatelessWidget {
 
         // Authenticated - Show main screen
         if (authProvider.isAuthenticated) {
-          return const MainScreen();
+          final userId = authProvider.user?.uid;
+          if (userId != null) {
+            return _AuthenticatedWrapper(userId: userId);
+          }
         }
 
         // Not authenticated - Show login
         return const LoginScreen();
       },
     );
+  }
+}
+
+/// Wrapper that initializes TransactionProvider only once
+class _AuthenticatedWrapper extends StatefulWidget {
+  final String userId;
+  
+  const _AuthenticatedWrapper({required this.userId});
+
+  @override
+  State<_AuthenticatedWrapper> createState() => _AuthenticatedWrapperState();
+}
+
+class _AuthenticatedWrapperState extends State<_AuthenticatedWrapper> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize transaction provider after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<TransactionProvider>().initializeForUser(widget.userId);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const MainScreen();
   }
 }
 

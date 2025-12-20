@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'transactions.dart';
+import 'package:provider/provider.dart';
+import '../providers/transaction_provider.dart';
+import '../models/transaction_model.dart';
 
-// Ozan Kaçmaz homescreen template
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -11,6 +12,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  
+  // Daily limit - can be made configurable later
+  final double dailyLimit = 100.0;
 
   @override
   void initState() {
@@ -29,41 +33,55 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 24),
-                _buildTodaySpendingCard(dailyLimit: 100, todaySpending: 100),
-                const SizedBox(height: 24),
-                _buildTotalBalanceCard(totalBalance: 500, totalIncome: 800, totalExpenses: 300),
-                const SizedBox(height: 24),
-                _buildCategoryBreakdownCard(),
-                const SizedBox(height: 24),
-                _buildRecentTransactions(),
-                const SizedBox(height: 24),
-                _buildSpendingLocationCard(),
-                const SizedBox(height: 100),
-              ],
+    return Consumer<TransactionProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFF5F5F5),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 24),
+                    _buildTodaySpendingCard(
+                      dailyLimit: dailyLimit,
+                      todaySpending: provider.todaySpending,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildTotalBalanceCard(
+                      totalBalance: provider.balance,
+                      totalIncome: provider.totalIncome,
+                      totalExpenses: provider.totalExpenses,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildCategoryBreakdownCard(provider.spendingByCategory),
+                    const SizedBox(height: 24),
+                    _buildRecentTransactions(provider.getRecentTransactions()),
+                    const SizedBox(height: 24),
+                    _buildSpendingLocationCard(
+                      onCampusSpending: provider.onCampusSpending,
+                      offCampusSpending: provider.offCampusSpending,
+                    ),
+                    const SizedBox(height: 100),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   Widget _buildHeader() {
     return FadeTransition(
       opacity: _animationController,
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text(
             'BudgetSU',
             style: TextStyle(
@@ -90,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     required double todaySpending,
     required double dailyLimit,
   }) {
-    final double progress = (dailyLimit > 0) ? todaySpending / dailyLimit : 0.0;
+    final double progress = (dailyLimit > 0) ? (todaySpending / dailyLimit).clamp(0.0, 1.0) : 0.0;
     final double remaining = dailyLimit - todaySpending;
 
     return SlideTransition(
@@ -162,15 +180,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 child: LinearProgressIndicator(
                   value: progress,
                   backgroundColor: Colors.white.withOpacity(0.3),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    progress >= 1.0 ? Colors.red[300]! : Colors.white,
+                  ),
                   minHeight: 8,
                 ),
               ),
               const SizedBox(height: 20),
               Text(
-                '\$${remaining.toStringAsFixed(2)} remaining today',
-                style: const TextStyle(
-                  color: Colors.white,
+                remaining >= 0 
+                    ? '\$${remaining.toStringAsFixed(2)} remaining today'
+                    : '\$${(-remaining).toStringAsFixed(2)} over budget!',
+                style: TextStyle(
+                  color: remaining >= 0 ? Colors.white : Colors.red[200],
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -181,7 +203,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
     );
   }
-  Widget _buildTotalBalanceCard({required double totalBalance, required double totalIncome, required double totalExpenses,}) {
+
+  Widget _buildTotalBalanceCard({
+    required double totalBalance,
+    required double totalIncome,
+    required double totalExpenses,
+  }) {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -212,9 +239,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              '1927.95',
-              style: TextStyle(
+            Text(
+              '\$${totalBalance.toStringAsFixed(2)}',
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
@@ -242,16 +269,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                       const SizedBox(height: 8),
                       Row(
-                        children: const [
-                          Icon(
+                        children: [
+                          const Icon(
                             Icons.trending_up,
                             color: Colors.white,
                             size: 20,
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Text(
-                            '\$2000.00',
-                            style: TextStyle(
+                            '\$${totalIncome.toStringAsFixed(2)}',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -276,16 +303,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                       const SizedBox(height: 8),
                       Row(
-                        children: const [
-                          Icon(
+                        children: [
+                          const Icon(
                             Icons.trending_down,
                             color: Colors.white,
                             size: 20,
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Text(
-                            '\$72.05',
-                            style: TextStyle(
+                            '\$${totalExpenses.toStringAsFixed(2)}',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -304,7 +331,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildCategoryBreakdownCard() { //Categorical expenses card
+  Widget _buildCategoryBreakdownCard(Map<String, double> spendingByCategory) {
+    final categories = spendingByCategory.entries.toList();
+    categories.sort((a, b) => b.value.compareTo(a.value));
+    final topCategories = categories.take(5).toList();
+    final maxAmount = topCategories.isNotEmpty ? topCategories.first.value : 100.0;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -331,58 +363,61 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              height: 250,
-              child: CustomPaint(
-                size: const Size(double.infinity, 250),
-                painter: BarChartPainter(),
-              ),
-            ),
+            if (topCategories.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text(
+                    'No expenses yet',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              )
+            else
+              ...topCategories.map((entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          entry.key,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          '\$${entry.value.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: entry.value / maxAmount,
+                        backgroundColor: Colors.grey[200],
+                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+                        minHeight: 8,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRecentTransactions() {
-    final transactions = [
-      {
-        'title': 'Scholarship Payment',
-        'category': 'Other',
-        'amount': '+\$2000.00',
-        'isIncome': true,
-        'location': '',
-      },
-      {
-        'title': 'Campus Cafeteria',
-        'category': 'Food',
-        'amount': '-\$12.50',
-        'isIncome': false,
-        'location': 'On-Campus',
-      },
-      {
-        'title': 'Bus Ticket',
-        'category': 'Transport',
-        'amount': '-\$2.75',
-        'isIncome': false,
-        'location': 'Off-Campus',
-      },
-      {
-        'title': 'Library Printing',
-        'category': 'Study',
-        'amount': '-\$5.00',
-        'isIncome': false,
-        'location': 'On-Campus',
-      },
-      {
-        'title': 'Coffee Shop',
-        'category': 'Food',
-        'amount': '-\$6.80',
-        'isIncome': false,
-        'location': 'Off-Campus',
-      },
-    ];
-
+  Widget _buildRecentTransactions(List<TransactionModel> transactions) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -410,102 +445,121 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ],
           ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: transactions.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              color: Colors.grey.withOpacity(0.2),
-            ),
-            itemBuilder: (context, index) {
-              final transaction = transactions[index];
-              return Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          child: transactions.isEmpty
+              ? const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(
+                    child: Text(
+                      'No transactions yet',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: transactions.length,
+                  separatorBuilder: (context, index) => Divider(
+                    height: 1,
+                    color: Colors.grey.withOpacity(0.2),
+                  ),
+                  itemBuilder: (context, index) {
+                    final tx = transactions[index];
+                    final isOnCampus = tx.campusLocation == 'On-Campus';
+                    
+                    return Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Row(
                         children: [
-                          Text(
-                            transaction['title'] as String,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Text(
-                                transaction['category'] as String,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              if ((transaction['location'] as String).isNotEmpty) ...[
-                                const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  '•',
-                                  style: TextStyle(
-                                    color: Colors.grey[400],
-                                    fontSize: 14,
+                                  tx.title,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: (transaction['location'] as String) == 'On-Campus'
-                                        ? const Color(0xFFEFF6FF)
-                                        : const Color(0xFFFAF5FF),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    transaction['location'] as String,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: (transaction['location'] as String) == 'On-Campus'
-                                          ? const Color(0xFF2563EB)
-                                          : const Color(0xFF9333EA),
-                                      fontWeight: FontWeight.w600,
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Text(
+                                      tx.category,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
-                                  ),
+                                    if (!tx.isIncome) ...[
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '•',
+                                        style: TextStyle(
+                                          color: Colors.grey[400],
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isOnCampus
+                                              ? const Color(0xFFEFF6FF)
+                                              : const Color(0xFFFAF5FF),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          tx.campusLocation,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isOnCampus
+                                                ? const Color(0xFF2563EB)
+                                                : const Color(0xFF9333EA),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ],
-                            ],
+                            ),
+                          ),
+                          Text(
+                            '${tx.isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: tx.isIncome
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFEF4444),
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    Text(
-                      transaction['amount'] as String,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: (transaction['isIncome'] as bool)
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFEF4444),
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         ),
       ],
     );
   }
 
-  Widget _buildSpendingLocationCard() {
+  Widget _buildSpendingLocationCard({
+    required double onCampusSpending,
+    required double offCampusSpending,
+  }) {
+    final total = onCampusSpending + offCampusSpending;
+    final onCampusPercent = total > 0 ? (onCampusSpending / total * 100) : 50.0;
+    final offCampusPercent = total > 0 ? (offCampusSpending / total * 100) : 50.0;
+
     return SlideTransition(
       position: Tween<Offset>(
         begin: const Offset(0, 0.3),
@@ -548,7 +602,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       iconColor: const Color(0xFF2563EB),
                       backgroundColor: const Color(0xFFEFF6FF),
                       label: 'On-Campus',
-                      amount: '\$62.50',
+                      amount: '\$${onCampusSpending.toStringAsFixed(2)}',
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -558,7 +612,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       iconColor: const Color(0xFF9333EA),
                       backgroundColor: const Color(0xFFFAF5FF),
                       label: 'Off-Campus',
-                      amount: '\$9.55',
+                      amount: '\$${offCampusSpending.toStringAsFixed(2)}',
                     ),
                   ),
                 ],
@@ -568,7 +622,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 height: 200,
                 child: CustomPaint(
                   size: const Size(double.infinity, 200),
-                  painter: DonutChartPainter(),
+                  painter: DonutChartPainter(
+                    onCampusPercent: onCampusPercent,
+                    offCampusPercent: offCampusPercent,
+                  ),
                 ),
               ),
             ],
@@ -628,12 +685,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 }
+
 class DonutChartPainter extends CustomPainter {
+  final double onCampusPercent;
+  final double offCampusPercent;
+
+  DonutChartPainter({
+    required this.onCampusPercent,
+    required this.offCampusPercent,
+  });
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.height / 2.5;
-    final strokeWidth = 35.0;
+    const strokeWidth = 35.0;
 
     final paint1 = Paint()
       ..color = const Color(0xFF2563EB)
@@ -647,29 +713,32 @@ class DonutChartPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    // On-Campus (87%)
+    final onCampusSweep = 2 * 3.14159 * (onCampusPercent / 100);
+    final offCampusSweep = 2 * 3.14159 * (offCampusPercent / 100);
+
+    // On-Campus arc
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       -1.57,
-      2 * 3.14159 * 0.87,
+      onCampusSweep,
       false,
       paint1,
     );
 
-    // Off-Campus (13%)
+    // Off-Campus arc
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -1.57 + (2 * 3.14159 * 0.87),
-      2 * 3.14159 * 0.13,
+      -1.57 + onCampusSweep,
+      offCampusSweep,
       false,
       paint2,
     );
 
     // Labels
     final textPainter1 = TextPainter(
-      text: const TextSpan(
-        text: 'On-Campus 87%',
-        style: TextStyle(
+      text: TextSpan(
+        text: 'On-Campus ${onCampusPercent.toStringAsFixed(0)}%',
+        style: const TextStyle(
           color: Color(0xFF2563EB),
           fontSize: 14,
           fontWeight: FontWeight.w600,
@@ -684,9 +753,9 @@ class DonutChartPainter extends CustomPainter {
     );
 
     final textPainter2 = TextPainter(
-      text: const TextSpan(
-        text: 'Off-Campus',
-        style: TextStyle(
+      text: TextSpan(
+        text: 'Off-Campus ${offCampusPercent.toStringAsFixed(0)}%',
+        style: const TextStyle(
           color: Color(0xFF9333EA),
           fontSize: 14,
           fontWeight: FontWeight.w600,
@@ -697,148 +766,13 @@ class DonutChartPainter extends CustomPainter {
     textPainter2.layout();
     textPainter2.paint(
       canvas,
-      Offset(center.dx + radius - 20, center.dy + radius - 30),
+      Offset(center.dx + radius - 40, center.dy + radius - 30),
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class BarChartPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.fill;
-
-    // Background bars (limits)
-    final limitPaint = Paint()
-      ..color = const Color(0xFFE5E7EB)
-      ..style = PaintingStyle.fill;
-
-    // Bar dimensions
-    final barWidth = 40.0;
-    final spacing = size.width / 3;
-    final baseY = size.height - 30;
-
-    // Draw limit bars (background)
-    // Transport limit
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(spacing - barWidth / 2, baseY - 200, barWidth, 200),
-        const Radius.circular(8),
-      ),
-      limitPaint,
-    );
-
-    // Entertainment limit
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(spacing * 2 - barWidth / 2, baseY - 140, barWidth, 140),
-        const Radius.circular(8),
-      ),
-      limitPaint,
-    );
-
-    // Draw spent bars (foreground)
-    paint.color = const Color(0xFF2563EB);
-
-    // Transport spent
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(spacing - barWidth / 2, baseY - 50, barWidth, 50),
-        const Radius.circular(8),
-      ),
-      paint,
-    );
-
-    // Entertainment spent
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(spacing * 2 - barWidth / 2, baseY - 35, barWidth, 35),
-        const Radius.circular(8),
-      ),
-      paint,
-    );
-
-    // Draw labels
-    final textPainter1 = TextPainter(
-      text: const TextSpan(
-        text: 'Transport',
-        style: TextStyle(
-          color: Color(0xFF6B7280),
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter1.layout();
-    textPainter1.paint(
-      canvas,
-      Offset(spacing - textPainter1.width / 2, baseY + 10),
-    );
-
-    final textPainter2 = TextPainter(
-      text: const TextSpan(
-        text: 'Entertainment',
-        style: TextStyle(
-          color: Color(0xFF6B7280),
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter2.layout();
-    textPainter2.paint(
-      canvas,
-      Offset(spacing * 2 - textPainter2.width / 2, baseY + 10),
-    );
-
-    // Draw legend
-    final limitRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(20, 20, 12, 12),
-      const Radius.circular(3),
-    );
-    canvas.drawRRect(limitRect, limitPaint);
-
-    final limitTextPainter = TextPainter(
-      text: const TextSpan(
-        text: 'Limit',
-        style: TextStyle(
-          color: Color(0xFF9CA3AF),
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    limitTextPainter.layout();
-    limitTextPainter.paint(canvas, const Offset(40, 16));
-
-    final spentRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(100, 20, 12, 12),
-      const Radius.circular(3),
-    );
-    canvas.drawRRect(spentRect, paint);
-
-    final spentTextPainter = TextPainter(
-      text: const TextSpan(
-        text: 'Spent',
-        style: TextStyle(
-          color: Color(0xFF2563EB),
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    spentTextPainter.layout();
-    spentTextPainter.paint(canvas, const Offset(120, 16));
+  bool shouldRepaint(covariant DonutChartPainter oldDelegate) {
+    return oldDelegate.onCampusPercent != onCampusPercent ||
+           oldDelegate.offCampusPercent != offCampusPercent;
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-
 }
