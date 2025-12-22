@@ -154,22 +154,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    '\$${todaySpending.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '\$${todaySpending.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       '/ \$${dailyLimit.toStringAsFixed(2)}',
                       style: const TextStyle(
                         color: Colors.white70,
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -644,21 +650,70 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
-              SizedBox(
-                height: 200,
+            const SizedBox(height: 32),
+            SizedBox(
+              height: 180,
+              child: Center(
                 child: CustomPaint(
-                  size: const Size(double.infinity, 200),
+                  size: const Size(180, 180),
                   painter: DonutChartPainter(
                     onCampusPercent: onCampusPercent,
                     offCampusPercent: offCampusPercent,
                   ),
                 ),
               ),
+            ),
+            const SizedBox(height: 16),
+            // Legend below the chart
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildLegendItem(
+                  color: const Color(0xFF2563EB),
+                  label: 'On-Campus',
+                  percent: onCampusPercent,
+                ),
+                const SizedBox(width: 24),
+                _buildLegendItem(
+                  color: const Color(0xFF9333EA),
+                  label: 'Off-Campus',
+                  percent: offCampusPercent,
+                ),
+              ],
+            ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLegendItem({
+    required Color color,
+    required String label,
+    required double percent,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '$label ${percent.toStringAsFixed(0)}%',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 
@@ -725,8 +780,8 @@ class DonutChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.height / 2.5;
-    const strokeWidth = 35.0;
+    final radius = size.width / 2 - 20;
+    const strokeWidth = 30.0;
 
     final paint1 = Paint()
       ..color = const Color(0xFF2563EB)
@@ -759,41 +814,6 @@ class DonutChartPainter extends CustomPainter {
       offCampusSweep,
       false,
       paint2,
-    );
-
-    // Labels
-    final textPainter1 = TextPainter(
-      text: TextSpan(
-        text: 'On-Campus ${onCampusPercent.toStringAsFixed(0)}%',
-        style: const TextStyle(
-          color: Color(0xFF2563EB),
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter1.layout();
-    textPainter1.paint(
-      canvas,
-      Offset(center.dx - radius - 80, center.dy - radius + 20),
-    );
-
-    final textPainter2 = TextPainter(
-      text: TextSpan(
-        text: 'Off-Campus ${offCampusPercent.toStringAsFixed(0)}%',
-        style: const TextStyle(
-          color: Color(0xFF9333EA),
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter2.layout();
-    textPainter2.paint(
-      canvas,
-      Offset(center.dx + radius - 40, center.dy + radius - 30),
     );
   }
 

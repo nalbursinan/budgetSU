@@ -94,6 +94,40 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     return entries.take(5).map((e) => {"label": e.key, "value": e.value}).toList();
   }
 
+  // Helper to calculate nice interval for Y-axis to prevent label overlap
+  double _calculateNiceInterval(double maxValue) {
+    if (maxValue <= 0) return 50;
+    
+    // Calculate a rough interval (aim for ~4-5 labels)
+    double roughInterval = maxValue / 4;
+    
+    // Round to a nice number
+    double magnitude = 1;
+    while (roughInterval >= 10) {
+      roughInterval /= 10;
+      magnitude *= 10;
+    }
+    while (roughInterval < 1) {
+      roughInterval *= 10;
+      magnitude /= 10;
+    }
+    
+    // Round to nearest nice value (1, 2, 5, 10)
+    double niceInterval;
+    if (roughInterval <= 1.5) {
+      niceInterval = 1 * magnitude;
+    } else if (roughInterval <= 3) {
+      niceInterval = 2 * magnitude;
+    } else if (roughInterval <= 7) {
+      niceInterval = 5 * magnitude;
+    } else {
+      niceInterval = 10 * magnitude;
+    }
+    
+    // Ensure minimum interval to prevent too many labels
+    return niceInterval < 25 ? 25 : niceInterval;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<TransactionProvider>(
@@ -222,6 +256,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     final days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     final now = DateTime.now();
     final maxDayName = maxIndex >= 0 ? days[(now.weekday - 7 + maxIndex) % 7] : "N/A";
+    
+    // Generate day labels for the last 7 days
+    List<String> dayLabels = [];
+    for (int i = 6; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      dayLabels.add(days[date.weekday - 1]);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,8 +292,48 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                       titlesData: FlTitlesData(
                         rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 50,
+                            getTitlesWidget: (value, meta) {
+                              if (value == meta.max || value == meta.min) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Text(
+                                  '\$${value.toInt()}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index < 0 || index >= dayLabels.length) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  dayLabels[index],
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
                       barGroups: List.generate(
                         dailyData.length,
@@ -315,28 +396,64 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                   height: 200,
                   child: Center(child: Text("No spending data yet", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)))),
                 )
-              : SizedBox(
-                  height: 260,
-                  child: PieChart(
-                    PieChartData(
-                      centerSpaceRadius: 40,
-                      sectionsSpace: 3,
-                      sections: hourCategories.map((e) {
-                        final double value = e["value"] as double;
-                        final double percent = total > 0 ? value / total * 100 : 0;
-                        return PieChartSectionData(
-                          value: value,
-                          color: e["color"] as Color,
-                          title: "${percent.toStringAsFixed(0)}%",
-                          radius: 60,
-                          titleStyle: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+              : Column(
+                  children: [
+                    SizedBox(
+                      height: 200,
+                      child: PieChart(
+                        PieChartData(
+                          centerSpaceRadius: 40,
+                          sectionsSpace: 3,
+                          sections: hourCategories.map((e) {
+                            final double value = e["value"] as double;
+                            final double percent = total > 0 ? value / total * 100 : 0;
+                            return PieChartSectionData(
+                              value: value,
+                              color: e["color"] as Color,
+                              title: "${percent.toStringAsFixed(0)}%",
+                              radius: 60,
+                              titleStyle: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Legend
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.center,
+                      children: hourCategories.map((e) {
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: e["color"] as Color,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              e["label"] as String,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
                         );
                       }).toList(),
                     ),
-                  ),
+                  ],
                 ),
         ),
       ],
@@ -373,34 +490,84 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                   height: 200,
                   child: Center(child: Text("No weekly data yet", style: TextStyle(color: Colors.grey))),
                 )
-              : SizedBox(
-                  height: 320,
-                  child: BarChart(
-                    BarChartData(
-                      borderData: FlBorderData(show: false),
-                      gridData: FlGridData(show: true, drawVerticalLine: false),
-                      titlesData: FlTitlesData(
-                        bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      ),
-                      barGroups: List.generate(
-                        weeklyData.length,
-                        (i) => BarChartGroupData(
-                          x: i,
-                          barRods: [
-                            BarChartRodData(
-                              toY: weeklyData[i],
-                              width: 20,
-                              color: const Color(0xFF3B82F6),
-                              borderRadius: BorderRadius.circular(6),
+              : Builder(
+                  builder: (context) {
+                    // Calculate a nice interval for Y-axis to prevent overlapping
+                    final maxVal = weeklyData.reduce((a, b) => a > b ? a : b);
+                    final interval = _calculateNiceInterval(maxVal);
+                    
+                    return SizedBox(
+                      height: 320,
+                      child: BarChart(
+                        BarChartData(
+                          borderData: FlBorderData(show: false),
+                          gridData: FlGridData(show: true, drawVerticalLine: false),
+                          maxY: ((maxVal / interval).ceil() * interval) + interval * 0.1,
+                          titlesData: FlTitlesData(
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                getTitlesWidget: (value, meta) {
+                                  final index = value.toInt();
+                                  if (index < 0 || index >= 5) return const SizedBox.shrink();
+                                  final labels = ['4w ago', '3w ago', '2w ago', 'Last wk', 'This wk'];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text(
+                                      labels[index],
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                          ],
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 55,
+                                interval: interval,
+                                getTitlesWidget: (value, meta) {
+                                  // Skip the max value to avoid edge overlap
+                                  if (value == meta.max) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: Text(
+                                      '\$${value.toInt()}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          ),
+                          barGroups: List.generate(
+                            weeklyData.length,
+                            (i) => BarChartGroupData(
+                              x: i,
+                              barRods: [
+                                BarChartRodData(
+                                  toY: weeklyData[i],
+                                  width: 20,
+                                  color: const Color(0xFF3B82F6),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
         ),
 
@@ -420,9 +587,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _buildBreakdownToggle() {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
+        color: theme.brightness == Brightness.dark
+            ? theme.colorScheme.surface
+            : const Color(0xFFF3F4F6),
         borderRadius: BorderRadius.circular(20),
       ),
       padding: const EdgeInsets.all(4),
@@ -437,6 +607,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
   Widget _breakdownButton(String label, String value) {
     final selected = breakdownTab == value;
+    final theme = Theme.of(context);
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => breakdownTab = value),
@@ -444,7 +615,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
+            color: selected 
+                ? (theme.brightness == Brightness.dark ? theme.cardColor : Colors.white)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             boxShadow: selected
                 ? [
@@ -462,8 +635,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: selected 
-                  ? Theme.of(context).colorScheme.onSurface
-                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
         ),
@@ -476,6 +649,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       0.0, 
       (sum, e) => sum + ((e["value"] as num).toDouble())
     );
+    
+    // Calculate max value and interval for Y-axis
+    final maxVal = categoryData.isEmpty 
+        ? 0.0 
+        : categoryData.map((e) => (e["value"] as num).toDouble()).reduce((a, b) => a > b ? a : b);
+    final interval = _calculateNiceInterval(maxVal);
 
     return _whiteCard(
       title: "Category Breakdown",
@@ -492,8 +671,30 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                     BarChartData(
                       borderData: FlBorderData(show: false),
                       gridData: FlGridData(show: true, drawVerticalLine: false),
+                      maxY: maxVal > 0 ? ((maxVal / interval).ceil() * interval) + interval * 0.1 : null,
                       titlesData: FlTitlesData(
-                        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 55,
+                            interval: interval,
+                            getTitlesWidget: (value, meta) {
+                              if (value == meta.max) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Text(
+                                  '\$${value.toInt()}',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                         rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         bottomTitles: AxisTitles(
@@ -573,6 +774,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     final offCampus = locationData.length > 1 
         ? (locationData[1]["value"] as num).toDouble() 
         : 0.0;
+    
+    // Calculate max value and interval for Y-axis
+    final maxVal = onCampus > offCampus ? onCampus : offCampus;
+    final interval = _calculateNiceInterval(maxVal);
 
     return _whiteCard(
       title: "Location Comparison",
@@ -590,16 +795,38 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                     BarChartData(
                       borderData: FlBorderData(show: false),
                       gridData: FlGridData(show: true, drawVerticalLine: false),
+                      maxY: maxVal > 0 ? ((maxVal / interval).ceil() * interval) + interval * 0.1 : null,
                       titlesData: FlTitlesData(
-                        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 55,
+                            interval: interval,
+                            getTitlesWidget: (value, meta) {
+                              if (value == meta.max) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Text(
+                                  '\$${value.toInt()}',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                         rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
                             getTitlesWidget: (value, meta) {
-                              if (value.toInt() == 0) return const Text("On-Campus", style: TextStyle(fontSize: 11));
-                              if (value.toInt() == 1) return const Text("Off-Campus", style: TextStyle(fontSize: 11));
+                              if (value.toInt() == 0) return Text("On-Campus", style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface));
+                              if (value.toInt() == 1) return Text("Off-Campus", style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface));
                               return const SizedBox.shrink();
                             },
                           ),
@@ -710,11 +937,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         ? ((locationData[0]["value"] as num).toDouble()) / totalLocation * 100
         : 0;
 
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
+        color: theme.brightness == Brightness.dark
+            ? theme.colorScheme.surface
+            : const Color(0xFFEFF6FF),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -724,23 +954,23 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             children: [
               const Icon(Icons.lightbulb_outline, color: Color(0xFFF59E0B)),
               const SizedBox(width: 8),
-              Text("Insights", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
+              Text("Insights", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             "• You spend an average of \$${avgPerDay.toStringAsFixed(2)} per day",
-            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
+            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
           ),
           const SizedBox(height: 4),
           Text(
             "• Your highest spending category is ${topCategory["label"]}",
-            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
+            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
           ),
           const SizedBox(height: 4),
           Text(
             "• ${onCampusPercent.toStringAsFixed(1)}% of your expenses are on-campus",
-            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
+            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
           ),
         ],
       ),
