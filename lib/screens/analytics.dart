@@ -108,8 +108,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           {"label": "Off-Campus", "value": provider.offCampusSpending},
         ];
 
+        final theme = Theme.of(context);
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -118,21 +119,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 children: [
                   FadeTransition(
                     opacity: _anim,
-                    child: const Text(
+                    child: Text(
                       "Analytics",
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: theme.colorScheme.onBackground,
                       ),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "${transactions.length} transactions analyzed",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),
 
@@ -160,9 +161,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _buildToggleButtons() {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -236,9 +238,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         _whiteCard(
           title: "Daily Spending (Last 7 Days)",
           child: dailyData.every((v) => v == 0)
-              ? const SizedBox(
+              ? SizedBox(
                   height: 200,
-                  child: Center(child: Text("No spending data yet", style: TextStyle(color: Colors.grey))),
+                  child: Center(child: Text("No spending data yet", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)))),
                 )
               : SizedBox(
                   height: 320,
@@ -309,9 +311,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         _whiteCard(
           title: "Spending by Time of Day",
           child: total == 0
-              ? const SizedBox(
+              ? SizedBox(
                   height: 200,
-                  child: Center(child: Text("No spending data yet", style: TextStyle(color: Colors.grey))),
+                  child: Center(child: Text("No spending data yet", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)))),
                 )
               : SizedBox(
                   height: 260,
@@ -459,7 +461,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: selected ? Colors.black87 : Colors.grey[700],
+              color: selected 
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
         ),
@@ -504,7 +508,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                                 padding: const EdgeInsets.only(top: 6.0),
                                 child: Text(
                                   categoryData[index]["label"] as String,
-                                  style: const TextStyle(fontSize: 11, color: Colors.black87),
+                                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface),
                                 ),
                               );
                             },
@@ -540,7 +544,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                         children: [
                           Text(
                             e["label"] as String,
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
@@ -658,7 +662,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+            Text(label, style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
             Text("${(percent * 100).toStringAsFixed(1)}%", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ],
         ),
@@ -716,27 +720,27 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.lightbulb_outline, color: Color(0xFFF59E0B)),
-              SizedBox(width: 8),
-              Text("Insights", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+              const Icon(Icons.lightbulb_outline, color: Color(0xFFF59E0B)),
+              const SizedBox(width: 8),
+              Text("Insights", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             "• You spend an average of \$${avgPerDay.toStringAsFixed(2)} per day",
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
+            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
           ),
           const SizedBox(height: 4),
           Text(
             "• Your highest spending category is ${topCategory["label"]}",
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
+            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
           ),
           const SizedBox(height: 4),
           Text(
             "• ${onCampusPercent.toStringAsFixed(1)}% of your expenses are on-campus",
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
+            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
           ),
         ],
       ),
@@ -780,10 +784,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _whiteCard({required String title, required Widget child}) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -796,7 +801,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 22, color: Colors.black87, fontWeight: FontWeight.bold)),
+          Text(title, style: TextStyle(fontSize: 22, color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           child,
         ],

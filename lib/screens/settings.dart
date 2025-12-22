@@ -12,14 +12,15 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SettingsProvider>(
       builder: (context, settingsProvider, child) {
+        final theme = Theme.of(context);
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
                 // Analytics-style header
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -27,15 +28,15 @@ class SettingsScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: theme.colorScheme.onBackground,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       "Manage your preferences and account",
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey,
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ),
                   ],
@@ -156,12 +157,12 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // Spending Limits Section
-                const Text(
+                Text(
                   'Spending Limits',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: theme.colorScheme.onBackground,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -169,27 +170,27 @@ class SettingsScreen extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Campus Location Section
-                const Text(
-                  'Campus Location',
+                // Appearance Section
+                Text(
+                  'Appearance',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: theme.colorScheme.onBackground,
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildCampusLocationCard(context, settingsProvider),
+                _buildAppearanceCard(context, settingsProvider),
 
                 const SizedBox(height: 24),
 
                 // Notifications Section
-                const Text(
+                Text(
                   'Notifications',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: theme.colorScheme.onBackground,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -198,16 +199,16 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // About Section
-                const Text(
+                Text(
                   'About',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: theme.colorScheme.onBackground,
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildAboutCard(),
+                _buildAboutCard(context),
 
                 const SizedBox(height: 16),
 
@@ -217,12 +218,12 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // Logout Section
-                const Text(
+                Text(
                   'Account',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: theme.colorScheme.onBackground,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -236,7 +237,7 @@ class SettingsScreen extends StatelessWidget {
                     'Made with ❤️ for students',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[500],
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                     ),
                   ),
                 ),
@@ -246,7 +247,7 @@ class SettingsScreen extends StatelessWidget {
                     '© 2025 BudgetSU',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.grey[400],
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                     ),
                   ),
                 ),
@@ -260,10 +261,11 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSpendingLimitCard(BuildContext context, SettingsProvider settingsProvider) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -279,11 +281,12 @@ class SettingsScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Daily Spending Limit',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               Container(
@@ -338,14 +341,14 @@ class SettingsScreen extends StatelessWidget {
                 '\$10',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
               Text(
                 '\$200',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
             ],
@@ -355,7 +358,7 @@ class SettingsScreen extends StatelessWidget {
             'Set a daily spending limit to help control your expenses and stay within budget',
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey[600],
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
               height: 1.4,
             ),
           ),
@@ -364,13 +367,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCampusLocationCard(BuildContext context, SettingsProvider settingsProvider) {
-    final campusLocation = settingsProvider.campusLocation;
+  Widget _buildAppearanceCard(BuildContext context, SettingsProvider settingsProvider) {
+    final theme = Theme.of(context);
+    final isDarkMode = settingsProvider.themeMode == ThemeMode.dark;
     
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -380,235 +383,26 @@ class SettingsScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.location_on,
-                  color: Colors.blue[700],
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Campus Boundaries',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (campusLocation == null)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.grey[300]!,
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Colors.grey[600],
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'No campus location set',
-                          style: TextStyle(
-                            color: Colors.grey[700],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showSetLocationDialog(context, settingsProvider),
-                    icon: const Icon(Icons.add_location, size: 20),
-                    label: const Text(
-                      'Set Campus Location',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[600],
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 0,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Setting a campus location helps automatically categorize transactions as on-campus or off-campus',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            )
-          else
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.green[200]!,
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            color: Colors.green[700],
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Location Active',
-                            style: TextStyle(
-                              color: Colors.green[900],
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      _buildLocationInfo(
-                        'Latitude',
-                        campusLocation.lat.toStringAsFixed(6),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildLocationInfo(
-                        'Longitude',
-                        campusLocation.lng.toStringAsFixed(6),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildLocationInfo(
-                        'Radius',
-                        '${campusLocation.radius.toStringAsFixed(0)} meters',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showSetLocationDialog(context, settingsProvider),
-                        icon: const Icon(Icons.edit, size: 18),
-                        label: const Text(
-                          'Edit',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.blue[700],
-                          side: BorderSide(color: Colors.blue[700]!),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (dialogContext) => AlertDialog(
-                              title: const Text('Remove Location?'),
-                              content: const Text(
-                                'Are you sure you want to remove your campus location? This will affect transaction categorization.',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(dialogContext),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    settingsProvider.updateCampusLocation(null);
-                                    Navigator.pop(dialogContext);
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.red,
-                                  ),
-                                  child: const Text('Remove'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.delete_outline, size: 18),
-                        label: const Text(
-                          'Remove',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red[700],
-                          side: BorderSide(color: Colors.red[300]!),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-        ],
+      child: _buildSwitchTile(
+        context,
+        'Dark Mode',
+        'Switch between light and dark theme',
+        isDarkMode ? Icons.dark_mode : Icons.light_mode,
+        isDarkMode,
+        (value) {
+          settingsProvider.toggleThemeMode();
+        },
+        isFirst: true,
+        isLast: true,
       ),
     );
   }
 
   Widget _buildNotificationsCard(BuildContext context, SettingsProvider settingsProvider) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -621,6 +415,7 @@ class SettingsScreen extends StatelessWidget {
       child: Column(
         children: [
           _buildSwitchTile(
+            context,
             'Budget Alerts',
             'Get notified when you\'re close to your budget limit',
             Icons.notifications_active_outlined,
@@ -632,6 +427,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(height: 1),
           _buildSwitchTile(
+            context,
             'Daily Summary',
             'Receive a daily summary of your spending',
             Icons.today_outlined,
@@ -642,6 +438,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(height: 1),
           _buildSwitchTile(
+            context,
             'Goal Reminders',
             'Reminders to help you reach your savings goals',
             Icons.flag_outlined,
@@ -656,11 +453,12 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAboutCard() {
+  Widget _buildAboutCard(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -690,7 +488,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -699,14 +497,15 @@ class SettingsScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Version 1.0.0',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey,
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ),
                   ],
@@ -719,7 +518,7 @@ class SettingsScreen extends StatelessWidget {
             'Track your expenses, set budgets, and achieve your financial goals. Built for students to manage their finances effectively.',
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey[700],
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
               height: 1.5,
             ),
           ),
@@ -729,9 +528,10 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildLinksCard(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -744,6 +544,7 @@ class SettingsScreen extends StatelessWidget {
       child: Column(
         children: [
           _buildListTile(
+            context,
             'Privacy Policy',
             Icons.privacy_tip_outlined,
             () {},
@@ -751,18 +552,21 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(height: 1),
           _buildListTile(
+            context,
             'Terms of Service',
             Icons.description_outlined,
             () {},
           ),
           const Divider(height: 1),
           _buildListTile(
+            context,
             'Help & Support',
             Icons.help_outline,
             () {},
           ),
           const Divider(height: 1),
           _buildListTile(
+            context,
             'Rate This App',
             Icons.star_outline,
             () {},
@@ -774,9 +578,10 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildLogoutCard(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -816,7 +621,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey[400]),
+              Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
             ],
           ),
         ),
@@ -824,30 +629,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationInfo(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey[700],
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.green[900],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildSwitchTile(
+    BuildContext context,
     String title,
     String subtitle,
     IconData icon,
@@ -856,6 +639,7 @@ class SettingsScreen extends StatelessWidget {
     bool isFirst = false,
     bool isLast = false,
   }) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -863,10 +647,18 @@ class SettingsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.blue[50],
+              color: theme.brightness == Brightness.dark
+                  ? Colors.blue.withOpacity(0.2)
+                  : Colors.blue[50],
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: Colors.blue[700], size: 22),
+            child: Icon(
+              icon,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.blue[300]
+                  : Colors.blue[700],
+              size: 22,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -875,9 +667,10 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -885,7 +678,7 @@ class SettingsScreen extends StatelessWidget {
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -894,7 +687,9 @@ class SettingsScreen extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.blue[700],
+            activeColor: theme.brightness == Brightness.dark
+                ? Colors.blue[400]
+                : Colors.blue[700],
           ),
         ],
       ),
@@ -902,12 +697,14 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildListTile(
+    BuildContext context,
     String title,
     IconData icon,
     VoidCallback onTap, {
     bool isFirst = false,
     bool isLast = false,
   }) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.vertical(
@@ -921,149 +718,36 @@ class SettingsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: theme.brightness == Brightness.dark
+                    ? Colors.blue.withOpacity(0.2)
+                    : Colors.blue[50],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: Colors.blue[700], size: 22),
+              child: Icon(
+                icon,
+                color: theme.brightness == Brightness.dark
+                    ? Colors.blue[300]
+                    : Colors.blue[700],
+                size: 22,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(
+              Icons.chevron_right,
+              color: theme.colorScheme.onSurface.withOpacity(0.4),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showSetLocationDialog(BuildContext context, SettingsProvider settingsProvider) {
-    final campusLocation = settingsProvider.campusLocation;
-    final latController = TextEditingController(
-      text: campusLocation?.lat.toString() ?? '',
-    );
-    final lngController = TextEditingController(
-      text: campusLocation?.lng.toString() ?? '',
-    );
-    final radiusController = TextEditingController(
-      text: campusLocation?.radius.toString() ?? '500',
-    );
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Set Campus Location'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Define your campus boundaries to automatically categorize transactions',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: latController,
-                decoration: InputDecoration(
-                  labelText: 'Latitude',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.location_on),
-                  hintText: 'e.g., 40.7128',
-                  helperText: 'Campus center latitude',
-                  helperStyle: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: lngController,
-                decoration: InputDecoration(
-                  labelText: 'Longitude',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.location_on),
-                  hintText: 'e.g., -74.0060',
-                  helperText: 'Campus center longitude',
-                  helperStyle: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: radiusController,
-                decoration: InputDecoration(
-                  labelText: 'Radius (meters)',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.radar),
-                  hintText: 'e.g., 500',
-                  helperText: 'Campus boundary radius',
-                  helperStyle: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (latController.text.isNotEmpty &&
-                  lngController.text.isNotEmpty &&
-                  radiusController.text.isNotEmpty) {
-                try {
-                  final location = CampusLocation(
-                    lat: double.parse(latController.text),
-                    lng: double.parse(lngController.text),
-                    radius: double.parse(radiusController.text),
-                  );
-                  final success = await settingsProvider.updateCampusLocation(location);
-                  if (dialogContext.mounted) {
-                    Navigator.pop(dialogContext);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(success 
-                            ? 'Campus location saved successfully'
-                            : 'Failed to save campus location'),
-                        backgroundColor: success ? Colors.green : Colors.red,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Invalid values. Please check your input.'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[600],
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Save Location'),
-          ),
-        ],
       ),
     );
   }
@@ -1102,3 +786,4 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/firestore_service.dart';
 
 /// Model for user settings
@@ -8,14 +10,12 @@ class UserSettings {
   final bool budgetAlerts;
   final bool dailySummary;
   final bool goalReminders;
-  final CampusLocation? campusLocation;
 
   const UserSettings({
     this.dailySpendingLimit = 50.0,
     this.budgetAlerts = true,
     this.dailySummary = false,
     this.goalReminders = true,
-    this.campusLocation,
   });
 
   UserSettings copyWith({
@@ -23,15 +23,12 @@ class UserSettings {
     bool? budgetAlerts,
     bool? dailySummary,
     bool? goalReminders,
-    CampusLocation? campusLocation,
-    bool clearCampusLocation = false,
   }) {
     return UserSettings(
       dailySpendingLimit: dailySpendingLimit ?? this.dailySpendingLimit,
       budgetAlerts: budgetAlerts ?? this.budgetAlerts,
       dailySummary: dailySummary ?? this.dailySummary,
       goalReminders: goalReminders ?? this.goalReminders,
-      campusLocation: clearCampusLocation ? null : (campusLocation ?? this.campusLocation),
     );
   }
 
@@ -41,7 +38,6 @@ class UserSettings {
       'budgetAlerts': budgetAlerts,
       'dailySummary': dailySummary,
       'goalReminders': goalReminders,
-      'campusLocation': campusLocation?.toFirestore(),
     };
   }
 
@@ -53,38 +49,6 @@ class UserSettings {
       budgetAlerts: data['budgetAlerts'] as bool? ?? true,
       dailySummary: data['dailySummary'] as bool? ?? false,
       goalReminders: data['goalReminders'] as bool? ?? true,
-      campusLocation: data['campusLocation'] != null
-          ? CampusLocation.fromFirestore(data['campusLocation'] as Map<String, dynamic>)
-          : null,
-    );
-  }
-}
-
-/// Campus location model
-class CampusLocation {
-  final double lat;
-  final double lng;
-  final double radius;
-
-  const CampusLocation({
-    required this.lat,
-    required this.lng,
-    required this.radius,
-  });
-
-  Map<String, dynamic> toFirestore() {
-    return {
-      'lat': lat,
-      'lng': lng,
-      'radius': radius,
-    };
-  }
-
-  factory CampusLocation.fromFirestore(Map<String, dynamic> data) {
-    return CampusLocation(
-      lat: (data['lat'] as num).toDouble(),
-      lng: (data['lng'] as num).toDouble(),
-      radius: (data['radius'] as num).toDouble(),
     );
   }
 }
@@ -98,6 +62,11 @@ class SettingsProvider extends ChangeNotifier {
   String? _errorMessage;
   String? _currentUserId;
   StreamSubscription? _settingsSubscription;
+  
+  // Theme mode management with SharedPreferences
+  ThemeMode _themeMode = ThemeMode.light;
+  static const String _themeModeKey = 'theme_mode';
+  bool _themeModeLoaded = false;
 
   // Getters
   UserSettings get settings => _settings;
@@ -105,9 +74,48 @@ class SettingsProvider extends ChangeNotifier {
   bool get budgetAlerts => _settings.budgetAlerts;
   bool get dailySummary => _settings.dailySummary;
   bool get goalReminders => _settings.goalReminders;
-  CampusLocation? get campusLocation => _settings.campusLocation;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  ThemeMode get themeMode => _themeMode;
+
+  /// Initialize theme mode from SharedPreferences (should be called on app startup)
+  Future<void> initializeThemeMode() async {
+    if (_themeModeLoaded) return;
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final themeModeIndex = prefs.getInt(_themeModeKey);
+      if (themeModeIndex != null && themeModeIndex >= 0 && themeModeIndex < ThemeMode.values.length) {
+        _themeMode = ThemeMode.values[themeModeIndex];
+      }
+      _themeModeLoaded = true;
+      notifyListeners();
+      debugPrint('SettingsProvider: Theme mode loaded - $_themeMode');
+    } catch (e) {
+      debugPrint('SettingsProvider: Failed to load theme mode - $e');
+      _themeModeLoaded = true; // Mark as loaded even on error to prevent retries
+    }
+  }
+
+  /// Update theme mode and persist to SharedPreferences
+  Future<void> updateThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    notifyListeners();
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_themeModeKey, mode.index);
+      debugPrint('SettingsProvider: Theme mode saved - $mode');
+    } catch (e) {
+      debugPrint('SettingsProvider: Failed to save theme mode - $e');
+    }
+  }
+
+  /// Toggle between light and dark theme
+  Future<void> toggleThemeMode() async {
+    final newMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    await updateThemeMode(newMode);
+  }
 
   /// Initialize settings for a user
   void initializeForUser(String userId) {
@@ -178,24 +186,6 @@ class SettingsProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('SettingsProvider: Failed to update notifications - $e');
       _errorMessage = 'Failed to update notification settings: $e';
-      notifyListeners();
-      return false;
-    }
-  }
-
-  /// Update campus location
-  Future<bool> updateCampusLocation(CampusLocation? location) async {
-    if (_currentUserId == null) return false;
-    
-    try {
-      final newSettings = location != null
-          ? _settings.copyWith(campusLocation: location)
-          : _settings.copyWith(clearCampusLocation: true);
-      await _firestoreService.updateUserSettings(_currentUserId!, newSettings);
-      return true;
-    } catch (e) {
-      debugPrint('SettingsProvider: Failed to update campus location - $e');
-      _errorMessage = 'Failed to update campus location: $e';
       notifyListeners();
       return false;
     }

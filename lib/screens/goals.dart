@@ -14,9 +14,10 @@ class GoalsScreen extends StatelessWidget {
       return;
     }
 
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -326,8 +327,9 @@ class GoalsScreen extends StatelessWidget {
         final completedCount = goalsProvider.completedCount;
         final achievementsCount = goalsProvider.achievementsCount;
 
+        final theme = Theme.of(context);
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: goalsProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -340,7 +342,7 @@ class GoalsScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Column(
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -348,15 +350,15 @@ class GoalsScreen extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                                    color: theme.colorScheme.onBackground,
                                   ),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
                                   "Track your savings targets",
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.grey,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                                   ),
                                 ),
                               ],

@@ -39,9 +39,10 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildBottomNavigationBar() {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -69,7 +70,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildNavItem(IconData icon, String label, int index) {
+    final theme = Theme.of(context);
     final isSelected = _selectedIndex == index;
+    final selectedColor = theme.colorScheme.primary;
+    final unselectedColor = theme.colorScheme.onSurface.withOpacity(0.6);
+    
     return InkWell(
       onTap: () => _onItemTapped(index),
       child: Column(
@@ -77,14 +82,14 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           Icon(
             icon,
-            color: isSelected ? const Color(0xFF2563EB) : Colors.grey,
+            color: isSelected ? selectedColor : unselectedColor,
             size: 26,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? const Color(0xFF2563EB) : Colors.grey,
+              color: isSelected ? selectedColor : unselectedColor,
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
