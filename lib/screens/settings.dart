@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/goals_provider.dart';
+import '../services/firestore_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -166,7 +167,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildSpendingLimitCard(context, settingsProvider),
+                _buildSpendingLimitCardWithStream(context, settingsProvider),
 
                 const SizedBox(height: 24),
 
@@ -260,8 +261,33 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSpendingLimitCard(BuildContext context, SettingsProvider settingsProvider) {
+  Widget _buildSpendingLimitCardWithStream(BuildContext context, SettingsProvider settingsProvider) {
     final theme = Theme.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.user?.uid;
+    
+    if (userId == null) {
+      return _buildSpendingLimitCard(context, settingsProvider);
+    }
+    
+    final firestoreService = FirestoreService();
+    
+    return StreamBuilder(
+      stream: firestoreService.getUserSettingsStream(userId),
+      builder: (context, snapshot) {
+        final currentLimit = snapshot.hasData 
+            ? snapshot.data!.dailySpendingLimit 
+            : settingsProvider.dailySpendingLimit;
+            
+        return _buildSpendingLimitCard(context, settingsProvider, currentLimit: currentLimit);
+      },
+    );
+  }
+
+  Widget _buildSpendingLimitCard(BuildContext context, SettingsProvider settingsProvider, {double? currentLimit}) {
+    final theme = Theme.of(context);
+    final displayLimit = currentLimit ?? settingsProvider.dailySpendingLimit;
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -299,7 +325,7 @@ class SettingsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '\$${settingsProvider.dailySpendingLimit.toStringAsFixed(0)}',
+                  '\$${displayLimit.toStringAsFixed(0)}',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -322,11 +348,11 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
             child: Slider(
-              value: settingsProvider.dailySpendingLimit,
+              value: displayLimit,
               min: 10,
               max: 200,
               divisions: 38,
-              label: '\$${settingsProvider.dailySpendingLimit.toStringAsFixed(0)}',
+              label: '\$${displayLimit.toStringAsFixed(0)}',
               onChanged: (value) {
                 // Update locally for smooth slider movement
                 settingsProvider.updateDailySpendingLimit(value);
