@@ -275,9 +275,24 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _buildHoursView(List<Map<String, dynamic>> hourCategories) {
-    final double total = hourCategories.fold(0, (sum, e) => sum + (e["value"] as double));
-    final peakTime = hourCategories.reduce((a, b) => 
-        (a["value"] as double) >= (b["value"] as double) ? a : b);
+    final double total = hourCategories.fold<double>(
+      0.0, 
+      (sum, e) => sum + ((e["value"] as num).toDouble())
+    );
+    // Fix: Use explicit type casting to avoid Map type mismatch
+    Map<String, dynamic> peakTime = hourCategories.isNotEmpty 
+        ? hourCategories.first 
+        : {"label": "N/A", "value": 0.0};
+    if (hourCategories.isNotEmpty) {
+      double maxValue = 0.0;
+      for (var cat in hourCategories) {
+        final value = (cat["value"] as num).toDouble();
+        if (value > maxValue) {
+          maxValue = value;
+          peakTime = cat;
+        }
+      }
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,8 +347,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     required List<Map<String, dynamic>> categoryData,
     required List<Map<String, dynamic>> locationData,
   }) {
-    final avgPerWeek = weeklyData.isEmpty ? 0.0 : 
-        weeklyData.reduce((a, b) => a + b) / weeklyData.where((v) => v > 0).length.clamp(1, 5);
+    final avgPerWeek = weeklyData.isEmpty 
+        ? 0.0 
+        : weeklyData.reduce((a, b) => a + b) / weeklyData.where((v) => v > 0).length.clamp(1, weeklyData.length);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,7 +468,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _buildCategoryBreakdownCard(List<Map<String, dynamic>> categoryData) {
-    final double total = categoryData.fold(0, (sum, e) => sum + (e["value"] as double));
+    final double total = categoryData.fold<double>(
+      0.0, 
+      (sum, e) => sum + ((e["value"] as num).toDouble())
+    );
 
     return _whiteCard(
       title: "Category Breakdown",
@@ -540,9 +559,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _buildLocationComparisonCard(List<Map<String, dynamic>> locationData) {
-    final double total = locationData.fold(0, (sum, e) => sum + (e["value"] as double));
-    final onCampus = locationData.isNotEmpty ? locationData[0]["value"] as double : 0.0;
-    final offCampus = locationData.length > 1 ? locationData[1]["value"] as double : 0.0;
+    final double total = locationData.fold<double>(
+      0.0, 
+      (sum, e) => sum + ((e["value"] as num).toDouble())
+    );
+    final onCampus = locationData.isNotEmpty 
+        ? (locationData[0]["value"] as num).toDouble() 
+        : 0.0;
+    final offCampus = locationData.length > 1 
+        ? (locationData[1]["value"] as num).toDouble() 
+        : 0.0;
 
     return _whiteCard(
       title: "Location Comparison",
@@ -659,13 +685,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         ? dailyData.reduce((a, b) => a + b) / dailyData.where((v) => v > 0).length
         : 0;
 
-    final topCategory = categoryData.isNotEmpty
-        ? categoryData.reduce((a, b) => (a["value"] as double) >= (b["value"] as double) ? a : b)
-        : {"label": "N/A", "value": 0.0};
+    // Fix: Use explicit type casting to avoid Map type mismatch
+    Map<String, dynamic> topCategory = {"label": "N/A", "value": 0.0};
+    if (categoryData.isNotEmpty) {
+      double maxValue = 0.0;
+      for (var cat in categoryData) {
+        final value = (cat["value"] as num).toDouble();
+        if (value > maxValue) {
+          maxValue = value;
+          topCategory = cat;
+        }
+      }
+    }
 
-    final double totalLocation = locationData.fold(0, (sum, e) => sum + (e["value"] as double));
+    final double totalLocation = locationData.fold<double>(
+      0.0, 
+      (sum, e) => sum + ((e["value"] as num).toDouble())
+    );
     final double onCampusPercent = totalLocation > 0 && locationData.isNotEmpty
-        ? (locationData[0]["value"] as double) / totalLocation * 100
+        ? ((locationData[0]["value"] as num).toDouble()) / totalLocation * 100
         : 0;
 
     return Container(
