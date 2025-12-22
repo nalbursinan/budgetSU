@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
+import '../../providers/settings_provider.dart';
+import '../../providers/goals_provider.dart';
 import '../mainscreen.dart';
 import 'login_screen.dart';
 
@@ -48,10 +50,12 @@ class _AuthenticatedWrapperState extends State<_AuthenticatedWrapper> {
   @override
   void initState() {
     super.initState();
-    // Initialize transaction provider after the first frame
+    // Initialize providers after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<TransactionProvider>().initializeForUser(widget.userId);
+        context.read<SettingsProvider>().initializeForUser(widget.userId);
+        context.read<GoalsProvider>().initializeForUser(widget.userId);
       }
     });
   }

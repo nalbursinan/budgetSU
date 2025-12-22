@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/settings_provider.dart';
 import '../models/transaction_model.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,9 +13,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  
-  // Daily limit - can be made configurable later
-  final double dailyLimit = 100.0;
 
   @override
   void initState() {
@@ -33,8 +31,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TransactionProvider>(
-      builder: (context, provider, child) {
+    return Consumer2<TransactionProvider, SettingsProvider>(
+      builder: (context, transactionProvider, settingsProvider, child) {
+        final dailyLimit = settingsProvider.dailySpendingLimit;
+        
         return Scaffold(
           backgroundColor: const Color(0xFFF5F5F5),
           body: SafeArea(
@@ -48,22 +48,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 24),
                     _buildTodaySpendingCard(
                       dailyLimit: dailyLimit,
-                      todaySpending: provider.todaySpending,
+                      todaySpending: transactionProvider.todaySpending,
                     ),
                     const SizedBox(height: 24),
                     _buildTotalBalanceCard(
-                      totalBalance: provider.balance,
-                      totalIncome: provider.totalIncome,
-                      totalExpenses: provider.totalExpenses,
+                      totalBalance: transactionProvider.balance,
+                      totalIncome: transactionProvider.totalIncome,
+                      totalExpenses: transactionProvider.totalExpenses,
                     ),
                     const SizedBox(height: 24),
-                    _buildCategoryBreakdownCard(provider.spendingByCategory),
+                    _buildCategoryBreakdownCard(transactionProvider.spendingByCategory),
                     const SizedBox(height: 24),
-                    _buildRecentTransactions(provider.getRecentTransactions()),
+                    _buildRecentTransactions(transactionProvider.getRecentTransactions()),
                     const SizedBox(height: 24),
                     _buildSpendingLocationCard(
-                      onCampusSpending: provider.onCampusSpending,
-                      offCampusSpending: provider.offCampusSpending,
+                      onCampusSpending: transactionProvider.onCampusSpending,
+                      offCampusSpending: transactionProvider.offCampusSpending,
                     ),
                     const SizedBox(height: 100),
                   ],
