@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/transaction_provider.dart';
+import 'providers/settings_provider.dart';
+import 'providers/goals_provider.dart';
 import 'screens/auth/auth_wrapper.dart';
 
 void main() async {
@@ -27,6 +29,8 @@ class BudgetSUApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => GoalsProvider()),
       ],
       child: MaterialApp(
         title: 'BudgetSU',

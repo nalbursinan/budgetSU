@@ -1,14 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/transaction_model.dart';
+import '../models/goal_model.dart';
+import '../providers/settings_provider.dart';
 
-/// Firestore Service for CRUD operations on transactions
+/// Firestore Service for CRUD operations on transactions, goals, and user settings
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
-  // Collection reference
+  // Collection references
   CollectionReference get _transactionsCollection => 
       _firestore.collection('transactions');
+  
+  CollectionReference get _userSettingsCollection =>
+      _firestore.collection('userSettings');
+  
+  CollectionReference get _goalsCollection =>
+      _firestore.collection('goals');
 
   /// CREATE - Add a new transaction
   Future<String> addTransaction(TransactionModel transaction) async {
@@ -129,6 +137,130 @@ class FirestoreService {
     } catch (e) {
       debugPrint('FirestoreService: Failed to calculate balance - $e');
       throw Exception('Failed to calculate balance: $e');
+    }
+  }
+
+  // ============================================
+  // USER SETTINGS METHODS
+  // ============================================
+
+  /// Get user settings stream (real-time updates)
+  Stream<UserSettings> getUserSettingsStream(String userId) {
+    debugPrint('FirestoreService: Setting up settings stream for user $userId');
+    return _userSettingsCollection
+        .doc(userId)
+        .snapshots()
+        .map((snapshot) {
+          debugPrint('FirestoreService: Received settings snapshot');
+          if (snapshot.exists) {
+            return UserSettings.fromFirestore(snapshot.data() as Map<String, dynamic>?);
+          }
+          return const UserSettings();
+        });
+  }
+
+  /// Get user settings once
+  Future<UserSettings> getUserSettings(String userId) async {
+    try {
+      final doc = await _userSettingsCollection.doc(userId).get();
+      if (doc.exists) {
+        return UserSettings.fromFirestore(doc.data() as Map<String, dynamic>?);
+      }
+      return const UserSettings();
+    } catch (e) {
+      debugPrint('FirestoreService: Failed to get user settings - $e');
+      throw Exception('Failed to get user settings: $e');
+    }
+  }
+
+  /// Update user settings (creates if doesn't exist)
+  Future<void> updateUserSettings(String userId, UserSettings settings) async {
+    try {
+      debugPrint('FirestoreService: Updating settings for user $userId');
+      await _userSettingsCollection.doc(userId).set(
+        settings.toFirestore(),
+        SetOptions(merge: true),
+      );
+      debugPrint('FirestoreService: Settings updated successfully');
+    } catch (e) {
+      debugPrint('FirestoreService: Failed to update user settings - $e');
+      throw Exception('Failed to update user settings: $e');
+    }
+  }
+
+  // ============================================
+  // GOALS METHODS
+  // ============================================
+
+  /// CREATE - Add a new goal
+  Future<String> addGoal(GoalModel goal) async {
+    try {
+      final docRef = await _goalsCollection.add(goal.toFirestore());
+      debugPrint('FirestoreService: Added goal ${docRef.id}');
+      return docRef.id;
+    } catch (e) {
+      debugPrint('FirestoreService: Failed to add goal - $e');
+      throw Exception('Failed to add goal: $e');
+    }
+  }
+
+  /// READ - Get all goals for a specific user (real-time stream)
+  Stream<List<GoalModel>> getGoalsStream(String userId) {
+    debugPrint('FirestoreService: Setting up goals stream for user $userId');
+    return _goalsCollection
+        .where('createdBy', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) {
+          debugPrint('FirestoreService: Received ${snapshot.docs.length} goals');
+          final goals = snapshot.docs
+              .map((doc) => GoalModel.fromFirestore(doc))
+              .toList();
+          // Sort by creation date (newest first)
+          goals.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return goals;
+        });
+  }
+
+  /// READ - Get a single goal by ID
+  Future<GoalModel?> getGoal(String goalId) async {
+    try {
+      final doc = await _goalsCollection.doc(goalId).get();
+      if (doc.exists) {
+        return GoalModel.fromFirestore(doc);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('FirestoreService: Failed to get goal - $e');
+      throw Exception('Failed to get goal: $e');
+    }
+  }
+
+  /// UPDATE - Update an existing goal
+  Future<void> updateGoal(GoalModel goal) async {
+    if (goal.id == null) {
+      throw Exception('Goal ID is required for update');
+    }
+    try {
+      debugPrint('FirestoreService: Updating goal ${goal.id}');
+      await _goalsCollection
+          .doc(goal.id)
+          .update(goal.toFirestore());
+      debugPrint('FirestoreService: Goal updated successfully');
+    } catch (e) {
+      debugPrint('FirestoreService: Failed to update goal - $e');
+      throw Exception('Failed to update goal: $e');
+    }
+  }
+
+  /// DELETE - Remove a goal
+  Future<void> deleteGoal(String goalId) async {
+    try {
+      debugPrint('FirestoreService: Deleting goal $goalId');
+      await _goalsCollection.doc(goalId).delete();
+      debugPrint('FirestoreService: Goal deleted successfully');
+    } catch (e) {
+      debugPrint('FirestoreService: Failed to delete goal - $e');
+      throw Exception('Failed to delete goal: $e');
     }
   }
 }
