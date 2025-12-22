@@ -27,20 +27,27 @@ class GoalsScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Completed Goals',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 16),
               ...completedGoals.map(
                 (g) => ListTile(
                   leading: const Icon(Icons.check_circle, color: Colors.green),
-                  title: Text(g.title),
+                  title: Text(
+                    g.title,
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
                   subtitle: Text(
                     '\$${g.current.toStringAsFixed(2)} / \$${g.target.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
                   ),
                 ),
               ),
@@ -61,14 +68,23 @@ class GoalsScreen extends StatelessWidget {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (dialogContext, setStateDialog) {
+            final theme = Theme.of(context);
             return AlertDialog(
-              title: const Text('Add Goal'),
+              backgroundColor: theme.cardColor,
+              title: Text(
+                'Add Goal',
+                style: TextStyle(color: theme.colorScheme.onSurface),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: titleController,
-                    decoration: const InputDecoration(labelText: 'Goal name'),
+                    decoration: InputDecoration(
+                      labelText: 'Goal name',
+                      labelStyle: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
                   ),
                   const SizedBox(height: 8),
                   TextField(
@@ -86,8 +102,11 @@ class GoalsScreen extends StatelessWidget {
                         }
                       });
                     },
-                    decoration:
-                        const InputDecoration(labelText: 'Target amount'),
+                    decoration: InputDecoration(
+                      labelText: 'Target amount',
+                      labelStyle: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
                   ),
                   if (targetError != null)
                     Padding(
@@ -105,7 +124,10 @@ class GoalsScreen extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancel'),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -171,14 +193,22 @@ class GoalsScreen extends StatelessWidget {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (dialogContext, setStateDialog) {
+            final theme = Theme.of(context);
             return AlertDialog(
-              title: Text('Add Progress to "${goal.title}"'),
+              backgroundColor: theme.cardColor,
+              title: Text(
+                'Add Progress to "${goal.title}"',
+                style: TextStyle(color: theme.colorScheme.onSurface),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     'Current: \$${goal.current.toStringAsFixed(2)} / \$${goal.target.toStringAsFixed(2)}',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -196,8 +226,11 @@ class GoalsScreen extends StatelessWidget {
                         }
                       });
                     },
-                    decoration:
-                        const InputDecoration(labelText: 'Amount to add'),
+                    decoration: InputDecoration(
+                      labelText: 'Amount to add',
+                      labelStyle: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
                   ),
                   if (progressError != null)
                     Padding(
@@ -215,7 +248,10 @@ class GoalsScreen extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancel'),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -283,13 +319,24 @@ class GoalsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) {
+        final theme = Theme.of(context);
         return AlertDialog(
-          title: const Text('Delete Goal'),
-          content: Text('Are you sure you want to delete "${goal.title}"?'),
+          backgroundColor: theme.cardColor,
+          title: Text(
+            'Delete Goal',
+            style: TextStyle(color: theme.colorScheme.onSurface),
+          ),
+          content: Text(
+            'Are you sure you want to delete "${goal.title}"?',
+            style: TextStyle(color: theme.colorScheme.onSurface),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: theme.colorScheme.onSurface),
+              ),
             ),
             TextButton(
               onPressed: () async {
@@ -406,12 +453,12 @@ class GoalsScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        const Text(
+                        Text(
                           'Active Goals',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: theme.colorScheme.onBackground,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -420,7 +467,7 @@ class GoalsScreen extends StatelessWidget {
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: theme.cardColor,
                               borderRadius: BorderRadius.circular(18),
                               boxShadow: [
                                 BoxShadow(
@@ -430,9 +477,12 @@ class GoalsScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            child: const Text(
+                            child: Text(
                               'No active goals yet.\nTap the + button to add your first goal.',
-                              style: TextStyle(fontSize: 14),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ),
                           )
                         else
@@ -451,12 +501,12 @@ class GoalsScreen extends StatelessWidget {
                                 .toList(),
                           ),
                         const SizedBox(height: 24),
-                        const Text(
+                        Text(
                           'Achievements',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: theme.colorScheme.onBackground,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -465,7 +515,7 @@ class GoalsScreen extends StatelessWidget {
                             width: double.infinity,
                             height: 90,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: theme.cardColor,
                               borderRadius: BorderRadius.circular(18),
                               boxShadow: [
                                 BoxShadow(
@@ -476,11 +526,14 @@ class GoalsScreen extends StatelessWidget {
                               ],
                             ),
                             padding: const EdgeInsets.all(16),
-                            child: const Center(
+                            child: Center(
                               child: Text(
                                 'No achievements yet.\nComplete goals to unlock achievements.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 14),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                               ),
                             ),
                           )
@@ -489,7 +542,7 @@ class GoalsScreen extends StatelessWidget {
                             width: double.infinity,
                             height: 90,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: theme.cardColor,
                               borderRadius: BorderRadius.circular(18),
                               boxShadow: [
                                 BoxShadow(
@@ -510,9 +563,10 @@ class GoalsScreen extends StatelessWidget {
                                 const SizedBox(width: 12),
                                 Text(
                                   '$achievementsCount achievement(s) unlocked!',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
+                                    color: theme.colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -544,6 +598,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -552,7 +607,7 @@ class _SummaryCard extends StatelessWidget {
         child: Container(
           height: 90,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
@@ -570,13 +625,19 @@ class _SummaryCard extends StatelessWidget {
               const Spacer(),
               Text(
                 value,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 label,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
               ),
             ],
           ),
@@ -600,12 +661,13 @@ class _GoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final progress = goal.progress;
     final remaining = goal.remaining;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -625,9 +687,10 @@ class _GoalCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   goal.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -636,7 +699,10 @@ class _GoalCard extends StatelessWidget {
                 children: [
                   TextButton(
                     onPressed: onAddProgress,
-                    child: const Text('Add Progress'),
+                    child: Text(
+                      'Add Progress',
+                      style: TextStyle(color: theme.colorScheme.primary),
+                    ),
                   ),
                   IconButton(
                     onPressed: onDelete,
@@ -651,7 +717,10 @@ class _GoalCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '\$${goal.current.toStringAsFixed(2)} / \$${goal.target.toStringAsFixed(2)}',
-            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 13,
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+            ),
           ),
           const SizedBox(height: 12),
           ClipRRect(
@@ -659,7 +728,9 @@ class _GoalCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: Colors.grey[300],
+              backgroundColor: theme.brightness == Brightness.dark
+                  ? Colors.grey[800]
+                  : Colors.grey[300],
               valueColor:
                   const AlwaysStoppedAnimation<Color>(Color(0xFF6A4DBC)),
             ),
@@ -670,7 +741,10 @@ class _GoalCard extends StatelessWidget {
             children: [
               Text(
                 '${(progress * 100).toStringAsFixed(0)}% complete',
-                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
               ),
               Text(
                 remaining > 0
@@ -678,7 +752,9 @@ class _GoalCard extends StatelessWidget {
                     : 'Goal reached!',
                 style: TextStyle(
                   fontSize: 12,
-                  color: remaining > 0 ? Colors.grey[700] : Colors.green,
+                  color: remaining > 0
+                      ? theme.colorScheme.onSurface.withOpacity(0.7)
+                      : Colors.green,
                   fontWeight:
                       remaining > 0 ? FontWeight.normal : FontWeight.w600,
                 ),
