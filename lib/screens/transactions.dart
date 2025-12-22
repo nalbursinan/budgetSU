@@ -4,16 +4,24 @@ import '../providers/transaction_provider.dart';
 import '../models/transaction_model.dart';
 
 class AppColors {
-  static const Color background = Color(0xFFF5F5F5);
+  static Color background(BuildContext context) => Theme.of(context).scaffoldBackgroundColor;
 
-  static const Color onCampusBg = Color(0xFFE4EEFF);
-  static const Color onCampusText = Color(0xFF0F63FF);
+  static Color onCampusBg(BuildContext context) => Theme.of(context).brightness == Brightness.dark
+      ? Colors.blue.withOpacity(0.2)
+      : const Color(0xFFE4EEFF);
+  static Color onCampusText(BuildContext context) => Theme.of(context).brightness == Brightness.dark
+      ? Colors.blue[300]!
+      : const Color(0xFF0F63FF);
 
-  static const Color offCampusBg = Color(0xFFF5E6FF);
-  static const Color offCampusText = Color(0xFFB020FF);
+  static Color offCampusBg(BuildContext context) => Theme.of(context).brightness == Brightness.dark
+      ? Colors.purple.withOpacity(0.2)
+      : const Color(0xFFF5E6FF);
+  static Color offCampusText(BuildContext context) => Theme.of(context).brightness == Brightness.dark
+      ? Colors.purple[300]!
+      : const Color(0xFFB020FF);
 
   // Primary purple (buttons etc.)
-  static const Color primaryPurple = Color(0xFF9E46F1);
+  static Color primaryPurple(BuildContext context) => Theme.of(context).colorScheme.primary;
 }
 
 /// On-campus food places
@@ -91,10 +99,11 @@ class TransactionsScreen extends StatefulWidget {
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
   void openAddSheet() {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -122,8 +131,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         }
         final dates = groups.keys.toList()..sort((a, b) => b.compareTo(a));
 
+        final theme = Theme.of(context);
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.background(context),
           body: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -160,10 +170,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       InkWell(
                         onTap: openAddSheet,
                         borderRadius: BorderRadius.circular(20),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 20,
-                          backgroundColor: AppColors.primaryPurple,
-                          child: Icon(Icons.add, color: Colors.white),
+                          backgroundColor: AppColors.primaryPurple(context),
+                          child: const Icon(Icons.add, color: Colors.white),
                         ),
                       ),
                     ],
@@ -172,11 +182,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
                   // Loading indicator
                   if (provider.isLoading)
-                    const Center(
+                    Center(
                       child: Padding(
-                        padding: EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(20),
                         child: CircularProgressIndicator(
-                          color: AppColors.primaryPurple,
+                          color: AppColors.primaryPurple(context),
                         ),
                       ),
                     )
@@ -346,15 +356,19 @@ class TransactionCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: tx.isIncome 
-                      ? Colors.green[50] 
-                      : (onCampus ? AppColors.onCampusBg : AppColors.offCampusBg),
+                      ? (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.green.withOpacity(0.2)
+                          : Colors.green[50])
+                      : (onCampus ? AppColors.onCampusBg(context) : AppColors.offCampusBg(context)),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   _getCategoryIcon(tx.category, tx.isIncome),
                   color: tx.isIncome 
-                      ? Colors.green[600] 
-                      : (onCampus ? AppColors.onCampusText : AppColors.offCampusText),
+                      ? (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.green[300]
+                          : Colors.green[600])
+                      : (onCampus ? AppColors.onCampusText(context) : AppColors.offCampusText(context)),
                   size: 22,
                 ),
               ),
@@ -366,9 +380,10 @@ class TransactionCard extends StatelessWidget {
                   children: [
                     Text(
                       tx.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -376,20 +391,25 @@ class TransactionCard extends StatelessWidget {
                       children: [
                         Text(
                           tx.category,
-                          style:
-                          TextStyle(color: Colors.grey[600], fontSize: 13),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            fontSize: 13,
+                          ),
                         ),
                         const SizedBox(width: 6),
-                        const Text("•",
-                            style: TextStyle(fontSize: 10, color: Colors.grey)),
+                        Text("•",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                            )),
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: onCampus
-                                ? AppColors.onCampusBg
-                                : AppColors.offCampusBg,
+                                ? AppColors.onCampusBg(context)
+                                : AppColors.offCampusBg(context),
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Row(
@@ -400,8 +420,8 @@ class TransactionCard extends StatelessWidget {
                                     : Icons.location_on_outlined,
                                 size: 14,
                                 color: onCampus
-                                    ? AppColors.onCampusText
-                                    : AppColors.offCampusText,
+                                    ? AppColors.onCampusText(context)
+                                    : AppColors.offCampusText(context),
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -409,8 +429,8 @@ class TransactionCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: onCampus
-                                      ? AppColors.onCampusText
-                                      : AppColors.offCampusText,
+                                      ? AppColors.onCampusText(context)
+                                      : AppColors.offCampusText(context),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -734,26 +754,30 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                       category = null;
                       campusPlace = null;
                     }),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isOnCampus
-                            ? AppColors.primaryPurple
-                            : Colors.white,
-                        borderRadius: const BorderRadius.horizontal(
-                          left: Radius.circular(14),
-                        ),
-                        border:
-                        Border.all(color: AppColors.primaryPurple),
-                      ),
-                      child: Center(
-                        child: Text("On-Campus",
-                            style: TextStyle(
-                              color: isOnCampus
-                                  ? Colors.white
-                                  : AppColors.primaryPurple,
-                            )),
-                      ),
+                    child: Builder(
+                      builder: (context) {
+                        final theme = Theme.of(context);
+                        return Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isOnCampus
+                                ? AppColors.primaryPurple(context)
+                                : theme.cardColor,
+                            borderRadius: const BorderRadius.horizontal(
+                              left: Radius.circular(14),
+                            ),
+                            border: Border.all(color: AppColors.primaryPurple(context)),
+                          ),
+                          child: Center(
+                            child: Text("On-Campus",
+                                style: TextStyle(
+                                  color: isOnCampus
+                                      ? Colors.white
+                                      : AppColors.primaryPurple(context),
+                                )),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -764,26 +788,30 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                       category = null;
                       campusPlace = null;
                     }),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: !isOnCampus
-                            ? AppColors.primaryPurple
-                            : Colors.white,
-                        borderRadius: const BorderRadius.horizontal(
-                          right: Radius.circular(14),
-                        ),
-                        border:
-                        Border.all(color: AppColors.primaryPurple),
-                      ),
-                      child: Center(
-                        child: Text("Off-Campus",
-                            style: TextStyle(
-                              color: !isOnCampus
-                                  ? Colors.white
-                                  : AppColors.primaryPurple,
-                            )),
-                      ),
+                    child: Builder(
+                      builder: (context) {
+                        final theme = Theme.of(context);
+                        return Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: !isOnCampus
+                                ? AppColors.primaryPurple(context)
+                                : theme.cardColor,
+                            borderRadius: const BorderRadius.horizontal(
+                              right: Radius.circular(14),
+                            ),
+                            border: Border.all(color: AppColors.primaryPurple(context)),
+                          ),
+                          child: Center(
+                            child: Text("Off-Campus",
+                                style: TextStyle(
+                                  color: !isOnCampus
+                                      ? Colors.white
+                                      : AppColors.primaryPurple(context),
+                                )),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -793,31 +821,36 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
             const SizedBox(height: 22),
 
             // SUBMIT
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isSubmitting ? null : submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryPurple,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-                child: isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        isEditing ? "Update Transaction" : "Add Transaction",
-                        style: const TextStyle(fontSize: 16),
+            Builder(
+              builder: (btnContext) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isSubmitting ? null : submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryPurple(btnContext),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
-              ),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            isEditing ? "Update Transaction" : "Add Transaction",
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                  ),
+                );
+              },
             ),
 
             // DELETE BUTTON (only in edit mode)

@@ -35,8 +35,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       builder: (context, transactionProvider, settingsProvider, child) {
         final dailyLimit = settingsProvider.dailySpendingLimit;
         
+        final theme = Theme.of(context);
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: theme.scaffoldBackgroundColor,
           body: SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -77,9 +78,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
     return FadeTransition(
       opacity: _animationController,
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -87,15 +89,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: theme.colorScheme.onBackground,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             'Track your campus spending',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey,
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -337,9 +339,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final topCategories = categories.take(5).toList();
     final maxAmount = topCategories.isNotEmpty ? topCategories.first.value : 100.0;
 
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -354,22 +357,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Categorical Expenses',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: theme.colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 24),
             if (topCategories.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Text(
                     'No expenses yet',
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
                   ),
                 ),
               )
@@ -384,16 +389,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       children: [
                         Text(
                           entry.key,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                         Text(
                           '\$${entry.value.toStringAsFixed(2)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF2563EB),
+                            color: theme.colorScheme.primary,
                           ),
                         ),
                       ],
@@ -403,8 +408,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: entry.value / maxAmount,
-                        backgroundColor: Colors.grey[200],
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+                        backgroundColor: theme.brightness == Brightness.dark
+                            ? Colors.grey[800]
+                            : Colors.grey[200],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          theme.colorScheme.primary,
+                        ),
                         minHeight: 8,
                       ),
                     ),
@@ -421,21 +430,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             'Recent Transactions',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),
         const SizedBox(height: 16),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
@@ -446,12 +455,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ],
           ),
           child: transactions.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.all(32),
+              ? Padding(
+                  padding: const EdgeInsets.all(32),
                   child: Center(
                     child: Text(
                       'No transactions yet',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      ),
                     ),
                   ),
                 )
@@ -461,7 +472,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   itemCount: transactions.length,
                   separatorBuilder: (context, index) => Divider(
                     height: 1,
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Theme.of(context).dividerColor,
                   ),
                   itemBuilder: (context, index) {
                     final tx = transactions[index];
@@ -477,10 +488,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               children: [
                                 Text(
                                   tx.title,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -490,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       tx.category,
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: Colors.grey[600],
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -499,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       Text(
                                         '•',
                                         style: TextStyle(
-                                          color: Colors.grey[400],
+                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                                           fontSize: 14,
                                         ),
                                       ),
@@ -511,8 +522,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         ),
                                         decoration: BoxDecoration(
                                           color: isOnCampus
-                                              ? const Color(0xFFEFF6FF)
-                                              : const Color(0xFFFAF5FF),
+                                              ? (Theme.of(context).brightness == Brightness.dark
+                                                  ? Colors.blue.withOpacity(0.2)
+                                                  : const Color(0xFFEFF6FF))
+                                              : (Theme.of(context).brightness == Brightness.dark
+                                                  ? Colors.purple.withOpacity(0.2)
+                                                  : const Color(0xFFFAF5FF)),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
@@ -520,8 +535,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: isOnCampus
-                                                ? const Color(0xFF2563EB)
-                                                : const Color(0xFF9333EA),
+                                                ? Theme.of(context).brightness == Brightness.dark
+                                                    ? Colors.blue[300]!
+                                                    : const Color(0xFF2563EB)
+                                                : Theme.of(context).brightness == Brightness.dark
+                                                    ? Colors.purple[300]!
+                                                    : const Color(0xFF9333EA),
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
@@ -570,7 +589,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       )),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
@@ -585,12 +604,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Spending Location',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 24),
@@ -599,8 +618,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   Expanded(
                     child: _buildLocationItem(
                       icon: Icons.business,
-                      iconColor: const Color(0xFF2563EB),
-                      backgroundColor: const Color(0xFFEFF6FF),
+                      iconColor: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.blue[400]!
+                          : const Color(0xFF2563EB),
+                      backgroundColor: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.blue.withOpacity(0.2)
+                          : const Color(0xFFEFF6FF),
                       label: 'On-Campus',
                       amount: '\$${onCampusSpending.toStringAsFixed(2)}',
                     ),
@@ -609,8 +632,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   Expanded(
                     child: _buildLocationItem(
                       icon: Icons.location_on,
-                      iconColor: const Color(0xFF9333EA),
-                      backgroundColor: const Color(0xFFFAF5FF),
+                      iconColor: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.purple[400]!
+                          : const Color(0xFF9333EA),
+                      backgroundColor: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.purple.withOpacity(0.2)
+                          : const Color(0xFFFAF5FF),
                       label: 'Off-Campus',
                       amount: '\$${offCampusSpending.toStringAsFixed(2)}',
                     ),
@@ -665,19 +692,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           const SizedBox(height: 12),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Colors.grey,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             amount,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
