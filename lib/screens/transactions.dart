@@ -148,20 +148,20 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "Transactions",
                               style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               "${transactions.length} total transactions",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey,
+                                color: theme.colorScheme.onSurface.withOpacity(0.6),
                               ),
                             ),
                           ],
@@ -200,13 +200,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             Icon(
                               Icons.receipt_long_outlined,
                               size: 64,
-                              color: Colors.grey[400],
+                              color: theme.colorScheme.onSurface.withOpacity(0.4),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               "No transactions yet.\nTap + to add your first one!",
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey[600], fontSize: 15),
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                fontSize: 15,
+                              ),
                             ),
                           ],
                         ),
@@ -221,7 +224,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             Text(
                               date,
                               style: TextStyle(
-                                color: Colors.grey[700],
+                                color: theme.colorScheme.onSurface.withOpacity(0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -251,15 +254,26 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   void _deleteTransaction(TransactionModel tx) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Transaction'),
-        content: Text('Are you sure you want to delete "${tx.title}"?'),
+        backgroundColor: theme.cardColor,
+        title: Text(
+          'Delete Transaction',
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${tx.title}"?',
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: theme.colorScheme.onSurface),
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -287,10 +301,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   void _editTransaction(TransactionModel tx) {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -339,7 +354,7 @@ class TransactionCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
@@ -447,8 +462,13 @@ class TransactionCard extends StatelessWidget {
               Text(
                 "${tx.isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}",
                 style: TextStyle(
-                  color:
-                  tx.isIncome ? Colors.green[600] : Colors.red[600],
+                  color: tx.isIncome
+                      ? (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.green[400]
+                          : Colors.green[600])
+                      : (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.red[400]
+                          : Colors.red[600]),
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),
@@ -525,13 +545,21 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
     super.dispose();
   }
 
-  InputDecoration box(String hint) {
+  InputDecoration box(BuildContext context, String hint) {
+    final theme = Theme.of(context);
     return InputDecoration(
       hintText: hint,
       filled: true,
-      fillColor: const Color(0xFFF3F3F3),
+      fillColor: theme.brightness == Brightness.dark
+          ? theme.colorScheme.surface
+          : const Color(0xFFF3F3F3),
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      hintStyle: TextStyle(
+        color: theme.colorScheme.onSurface.withOpacity(0.5),
+      ),
       contentPadding:
       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     );
@@ -642,25 +670,58 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
               children: [
                 Text(
                   isEditing ? "Edit Transaction" : "Add Transaction",
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 const Spacer(),
                 IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close)),
+                    icon: Icon(
+                      Icons.close,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    )),
               ],
             ),
             const SizedBox(height: 16),
 
             // TYPE
-            const Text("Type"),
+            Text(
+              "Type",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 6),
             DropdownButtonFormField(
               value: type,
-              decoration: box(""),
-              items: const [
-                DropdownMenuItem(value: "Expense", child: Text("Expense")),
-                DropdownMenuItem(value: "Income", child: Text("Income")),
+              decoration: box(context, ""),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              dropdownColor: Theme.of(context).cardColor,
+              items: [
+                DropdownMenuItem(
+                  value: "Expense",
+                  child: Text(
+                    "Expense",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: "Income",
+                  child: Text(
+                    "Income",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
               ],
               onChanged: (v) {
                 setState(() {
@@ -673,20 +734,41 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
             const SizedBox(height: 16),
 
             // DESCRIPTION
-            const Text("Description"),
+            Text(
+              "Description",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 6),
-            TextField(controller: descCtrl, decoration: box("e.g., Bus Ticket")),
+            TextField(
+              controller: descCtrl,
+              decoration: box(context, "e.g., Bus Ticket"),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
             const SizedBox(height: 16),
 
             // AMOUNT
-            const Text("Amount"),
+            Text(
+              "Amount",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 6),
             TextField(
               controller: amountCtrl,
-              decoration: box("0.00").copyWith(
+              decoration: box(context, "0.00").copyWith(
                 errorText: amountError ? "Please enter a valid number" : null,
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               onChanged: (value) {
                 setState(() {
                   if (value.trim().isEmpty) {
@@ -702,13 +784,31 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
             const SizedBox(height: 16),
 
             // CATEGORY
-            const Text("Category"),
+            Text(
+              "Category",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 6),
             DropdownButtonFormField(
               value: currentCategories.contains(category) ? category : null,
-              decoration: box("Select category"),
+              decoration: box(context, "Select category"),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              dropdownColor: Theme.of(context).cardColor,
               items: currentCategories
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .map((c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(
+                          c,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ))
                   .toList(),
               onChanged: (v) {
                 setState(() {
@@ -721,13 +821,31 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
             // PLACES
             if (showPlaceDropdown) ...[
               const SizedBox(height: 16),
-              Text(isOnCampus ? "On-Campus place" : "Off-Campus place"),
+              Text(
+                isOnCampus ? "On-Campus place" : "Off-Campus place",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               const SizedBox(height: 6),
               DropdownButtonFormField(
                 value: campusPlace,
-                decoration: box("Select place"),
+                decoration: box(context, "Select place"),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                dropdownColor: Theme.of(context).cardColor,
                 items: _getPlaceList()
-                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                    .map((p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(
+                            p,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ))
                     .toList(),
                 onChanged: (v) {
                   setState(() {
@@ -743,7 +861,13 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
             const SizedBox(height: 16),
 
             // LOCATION
-            const Text("Location"),
+            Text(
+              "Location",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -881,15 +1005,26 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   }
 
   void _showDeleteConfirmation() {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Transaction'),
-        content: Text('Are you sure you want to delete "${widget.transaction?.title}"?'),
+        backgroundColor: theme.cardColor,
+        title: Text(
+          'Delete Transaction',
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${widget.transaction?.title}"?',
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: theme.colorScheme.onSurface),
+            ),
           ),
           TextButton(
             onPressed: () async {
