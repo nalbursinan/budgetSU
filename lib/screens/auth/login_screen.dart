@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import 'register_screen.dart';
@@ -51,14 +52,115 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = context.read<AuthProvider>();
+    
+    // Clear any previous errors
+    authProvider.clearError();
+    
     final success = await authProvider.signIn(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
 
     if (!success && mounted) {
-      _showErrorSnackBar(authProvider.errorMessage ?? 'Login failed');
+      // Get error message directly from provider immediately after signIn
+      String? errorMessage = authProvider.errorMessage;
+      
+      // If error message is null, wait a bit and try again
+      if (errorMessage == null || errorMessage.isEmpty) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        errorMessage = authProvider.errorMessage;
+      }
+      
+      debugPrint('Login failed. Success: $success, Error message: "$errorMessage"'); // Debug
+      
+      if (errorMessage != null && errorMessage.isNotEmpty) {
+        final friendlyMessage = _getUserFriendlyErrorMessage(errorMessage);
+        debugPrint('Friendly message: "$friendlyMessage"'); // Debug
+        
+        // Show error - Try SnackBar first, fallback to Dialog if needed
+        // Wait for next frame to ensure UI is ready
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            // Show both SnackBar and Dialog for maximum visibility
+            _showErrorSnackBar(friendlyMessage);
+            // Also show dialog as backup (uncomment if SnackBar doesn't work)
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                _showErrorDialog(friendlyMessage);
+              }
+            });
+          }
+        });
+      } else {
+        // Fallback if no error message
+        debugPrint('No error message found, showing fallback'); // Debug
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _showErrorSnackBar('Login failed. Please check your email and password.');
+          }
+        });
+      }
     }
+  }
+
+  String _getUserFriendlyErrorMessage(String error) {
+    // Convert to lowercase for case-insensitive matching
+    final errorLower = error.toLowerCase();
+    
+    debugPrint('Processing error message: $error'); // Debug
+    
+    // Check for invalid-credential first (newer Firebase versions use this)
+    // This covers both wrong password and user not found
+    if (errorLower.contains('invalid-credential') || 
+        errorLower.contains('invalid email or password')) {
+      return 'The email or password you entered is incorrect. Please try again.';
+    }
+    
+    // Check for wrong password specifically
+    if (errorLower.contains('wrong-password') || 
+        errorLower.contains('incorrect password')) {
+      return 'The password you entered is incorrect. Please try again.';
+    }
+    
+    // Check for user not found
+    if (errorLower.contains('user-not-found') || 
+        errorLower.contains('no account found')) {
+      return 'No account found with this email. Please check your email or sign up.';
+    }
+    
+    // Check for invalid email
+    if (errorLower.contains('invalid-email') || 
+        errorLower.contains('not valid') ||
+        errorLower.contains('email address is not valid')) {
+      return 'Please enter a valid email address.';
+    }
+    
+    // Check for too many requests
+    if (errorLower.contains('too-many-requests') || 
+        errorLower.contains('too many attempts')) {
+      return 'Too many login attempts. Please wait a few minutes and try again.';
+    }
+    
+    // Check for network errors
+    if (errorLower.contains('network') || 
+        errorLower.contains('connection') || 
+        errorLower.contains('network error')) {
+      return 'Unable to connect. Please check your internet connection and try again.';
+    }
+    
+    // Check for disabled account
+    if (errorLower.contains('user-disabled') || 
+        errorLower.contains('account has been disabled')) {
+      return 'This account has been disabled. Please contact support.';
+    }
+    
+    // If error message is not recognized, show a generic message
+    if (error.isNotEmpty) {
+      debugPrint('Unrecognized error: $error'); // Debug
+      return 'Login failed. Please check your email and password and try again.';
+    }
+    
+    return 'Login failed. Please check your email and password and try again.';
   }
 
   Future<void> _handleForgotPassword() async {
@@ -69,50 +171,154 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       return;
     }
 
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      _showErrorSnackBar('Please enter a valid email address');
+      return;
+    }
+
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.sendPasswordResetEmail(email: email);
 
     if (mounted) {
       if (success) {
-        _showSuccessSnackBar('Password reset email sent to $email');
+        _showSuccessSnackBar('Password reset email sent! Check your inbox at $email');
       } else {
-        _showErrorSnackBar(authProvider.errorMessage ?? 'Failed to send email');
+        final errorMessage = authProvider.errorMessage ?? 'Failed to send email';
+        _showErrorSnackBar(_getPasswordResetErrorMessage(errorMessage));
       }
     }
   }
 
+  String _getPasswordResetErrorMessage(String error) {
+    if (error.contains('user-not-found') || error.contains('No account found')) {
+      return 'No account found with this email. Please check your email or sign up.';
+    }
+    if (error.contains('invalid-email') || error.contains('not valid')) {
+      return 'Please enter a valid email address.';
+    }
+    if (error.contains('too-many-requests')) {
+      return 'Too many requests. Please wait a few minutes and try again.';
+    }
+    if (error.contains('network') || error.contains('connection')) {
+      return 'Unable to connect. Please check your internet connection and try again.';
+    }
+    return error;
+  }
+
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(child: Text(message)),
-          ],
+    if (!mounted) return;
+    
+    debugPrint('Showing error snackbar: $message'); // Debug
+    
+    // Try SnackBar first
+    try {
+      // Clear any existing snackbars first
+      ScaffoldMessenger.of(context).clearSnackBars();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white, size: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 8), // Increased to 8 seconds for better visibility
+          elevation: 6,
         ),
-        backgroundColor: const Color(0xFFEF4444),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-      ),
+      );
+    } catch (e) {
+      debugPrint('Error showing SnackBar: $e');
+      // Fallback to AlertDialog if SnackBar fails
+      _showErrorDialog(message);
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 28),
+              const SizedBox(width: 12),
+              const Text(
+                'Login Failed',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2563EB),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
+    
+    // Clear any existing snackbars first
+    ScaffoldMessenger.of(context).clearSnackBars();
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white),
+            const Icon(Icons.check_circle_outline, color: Colors.white, size: 24),
             const SizedBox(width: 12),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           ],
         ),
         backgroundColor: const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 5),
+        elevation: 6,
       ),
     );
   }
@@ -147,6 +353,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -175,20 +382,20 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
+        Text(
           'Welcome Back!',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: theme.colorScheme.onBackground,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Sign in to continue tracking your campus spending',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey,
+            color: theme.colorScheme.onSurface.withOpacity(0.7),
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -197,16 +404,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildLoginCard() {
+    final theme = Theme.of(context);
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withOpacity(theme.brightness == Brightness.dark ? 0.3 : 0.05),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -218,12 +426,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Email
-                const Text(
+                Text(
                   'Email',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -237,10 +445,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Email is required';
+                      return 'Please enter your email address';
                     }
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return 'Enter a valid email';
+                      return 'Please enter a valid email address';
                     }
                     return null;
                   },
@@ -248,12 +456,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 const SizedBox(height: 20),
 
                 // Password
-                const Text(
+                Text(
                   'Password',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -268,14 +476,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                        color: Colors.grey,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       ),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Password is required';
+                      return 'Please enter your password';
                     }
                     return null;
                   },
@@ -301,9 +509,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Remember me',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
                         ),
                       ],
                     ),
@@ -380,13 +591,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildRegisterPrompt() {
+    final theme = Theme.of(context);
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             "Don't have an account? ",
-            style: TextStyle(fontSize: 15, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 15,
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
+            ),
           ),
           GestureDetector(
             onTap: () {
@@ -414,13 +629,25 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     required IconData icon,
     Widget? suffixIcon,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 15),
-      prefixIcon: Icon(icon, color: Colors.grey[400], size: 22),
+      hintStyle: TextStyle(
+        color: theme.colorScheme.onSurface.withOpacity(0.5),
+        fontSize: 15,
+      ),
+      prefixIcon: Icon(
+        icon,
+        color: theme.colorScheme.onSurface.withOpacity(0.6),
+        size: 22,
+      ),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: const Color(0xFFF5F5F5),
+      fillColor: isDark
+          ? theme.colorScheme.surface.withOpacity(0.5)
+          : const Color(0xFFF5F5F5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
@@ -431,17 +658,27 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+        borderSide: BorderSide(
+          color: theme.colorScheme.primary,
+          width: 2,
+        ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
+        borderSide: BorderSide(
+          color: theme.colorScheme.error,
+          width: 1,
+        ),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+        borderSide: BorderSide(
+          color: theme.colorScheme.error,
+          width: 2,
+        ),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
 }
+

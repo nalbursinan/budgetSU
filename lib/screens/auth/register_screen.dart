@@ -42,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     if (!_formKey.currentState!.validate()) return;
 
     if (!_agreeToTerms) {
-      _showErrorSnackBar('Please agree to the Terms of Service');
+      _showErrorSnackBar('Please agree to the Terms of Service and Privacy Policy to continue.');
       return;
     }
 
@@ -54,12 +54,36 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
     if (mounted) {
       if (success) {
-        _showSuccessSnackBar('Account created successfully!');
+        _showSuccessSnackBar('Account created successfully! Welcome to BudgetSU!');
         Navigator.pop(context);
       } else {
-        _showErrorSnackBar(authProvider.errorMessage ?? 'Registration failed');
+        final errorMessage = authProvider.errorMessage ?? 'Registration failed';
+        _showErrorSnackBar(_getUserFriendlyErrorMessage(errorMessage));
       }
     }
+  }
+
+  String _getUserFriendlyErrorMessage(String error) {
+    // Map Firebase errors to more user-friendly messages
+    if (error.contains('email-already-in-use') || error.contains('already exists')) {
+      return 'An account with this email already exists. Please sign in instead.';
+    }
+    if (error.contains('weak-password') || error.contains('stronger password')) {
+      return 'Password is too weak. Please use at least 6 characters with a mix of letters and numbers.';
+    }
+    if (error.contains('invalid-email') || error.contains('not valid')) {
+      return 'Please enter a valid email address (e.g., name@example.com).';
+    }
+    if (error.contains('too-many-requests')) {
+      return 'Too many sign-up attempts. Please wait a few minutes and try again.';
+    }
+    if (error.contains('network') || error.contains('connection')) {
+      return 'Unable to connect. Please check your internet connection and try again.';
+    }
+    if (error.contains('operation-not-allowed')) {
+      return 'Email/password sign-up is currently disabled. Please contact support.';
+    }
+    return error; // Return original if no match
   }
 
   void _showErrorSnackBar(String message) {
@@ -129,27 +153,33 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   Widget _buildBackButton() {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () => Navigator.pop(context),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withOpacity(theme.brightness == Brightness.dark ? 0.3 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
+        child: Icon(
+          Icons.arrow_back_ios_new,
+          color: theme.colorScheme.onSurface,
+          size: 20,
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -174,20 +204,20 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           child: const Icon(Icons.person_add_alt_1, color: Colors.white, size: 40),
         ),
         const SizedBox(height: 24),
-        const Text(
+        Text(
           'Create Account',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: theme.colorScheme.onBackground,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Sign up to start managing your campus budget',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey,
+            color: theme.colorScheme.onSurface.withOpacity(0.7),
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -196,16 +226,17 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   Widget _buildRegisterCard() {
+    final theme = Theme.of(context);
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withOpacity(theme.brightness == Brightness.dark ? 0.3 : 0.05),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -217,9 +248,13 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Email
-                const Text(
+                Text(
                   'Email',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -228,9 +263,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                   textInputAction: TextInputAction.next,
                   decoration: _inputDecoration(hint: 'Enter your email', icon: Icons.email_outlined),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Email is required';
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email address';
+                    }
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return 'Enter a valid email';
+                      return 'Please enter a valid email address (e.g., name@example.com)';
                     }
                     return null;
                   },
@@ -238,9 +275,13 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 const SizedBox(height: 20),
 
                 // Password
-                const Text(
+                Text(
                   'Password',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -254,14 +295,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                        color: Colors.grey,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       ),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Password is required';
-                    if (value.length < 6) return 'Password must be at least 6 characters';
+                    if (value == null || value.isEmpty) {
+                      return 'Password is required';
+                    }
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters long';
+                    }
                     return null;
                   },
                 ),
@@ -270,9 +315,13 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 const SizedBox(height: 20),
 
                 // Confirm Password
-                const Text(
+                Text(
                   'Confirm Password',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -286,14 +335,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                        color: Colors.grey,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       ),
                       onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please confirm your password';
-                    if (value != _passwordController.text) return 'Passwords do not match';
+                    if (value == null || value.isEmpty) {
+                      return 'Please confirm your password';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'Passwords do not match. Please try again.';
+                    }
                     return null;
                   },
                 ),
@@ -316,18 +369,28 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     const SizedBox(width: 12),
                     Expanded(
                       child: RichText(
-                        text: const TextSpan(
-                          style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.4),
+                        text: TextSpan(
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            height: 1.4,
+                          ),
                           children: [
-                            TextSpan(text: 'I agree to the '),
+                            const TextSpan(text: 'I agree to the '),
                             TextSpan(
                               text: 'Terms of Service',
-                              style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                            TextSpan(text: ' and '),
+                            const TextSpan(text: ' and '),
                             TextSpan(
                               text: 'Privacy Policy',
-                              style: TextStyle(color: Color(0xFF9333EA), fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                color: theme.colorScheme.secondary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
@@ -415,11 +478,13 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     return Row(
       children: [
         Expanded(
-          child: ClipRRect(
+            child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: strength / 5,
-              backgroundColor: Colors.grey[200],
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[800]
+                  : Colors.grey[200],
               valueColor: AlwaysStoppedAnimation<Color>(color),
               minHeight: 4,
             ),
@@ -432,11 +497,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   Widget _buildLoginPrompt() {
+    final theme = Theme.of(context);
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('Already have an account? ', style: TextStyle(fontSize: 15, color: Colors.grey)),
+          Text(
+            'Already have an account? ',
+            style: TextStyle(
+              fontSize: 15,
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
+            ),
+          ),
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: const Text(
@@ -454,13 +526,25 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     required IconData icon,
     Widget? suffixIcon,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 15),
-      prefixIcon: Icon(icon, color: Colors.grey[400], size: 22),
+      hintStyle: TextStyle(
+        color: theme.colorScheme.onSurface.withOpacity(0.5),
+        fontSize: 15,
+      ),
+      prefixIcon: Icon(
+        icon,
+        color: theme.colorScheme.onSurface.withOpacity(0.6),
+        size: 22,
+      ),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: const Color(0xFFF5F5F5),
+      fillColor: isDark
+          ? theme.colorScheme.surface.withOpacity(0.5)
+          : const Color(0xFFF5F5F5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
@@ -471,15 +555,24 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF9333EA), width: 2),
+        borderSide: BorderSide(
+          color: theme.colorScheme.primary,
+          width: 2,
+        ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
+        borderSide: BorderSide(
+          color: theme.colorScheme.error,
+          width: 1,
+        ),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+        borderSide: BorderSide(
+          color: theme.colorScheme.error,
+          width: 2,
+        ),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
