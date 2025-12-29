@@ -175,5 +175,5 @@ In accordance with the project requirements, we have identified the following li
   While the app supports local data entry, an active internet connection is required to synchronize data with the Cloud Firestore database and authenticate users via Firebase Auth.
 
 * **Geofencing Accuracy:**
-  The distinction between "On-Campus" and "Off-Campus" transactions relies on the device's GPS accuracy, which may vary depending on signal strength and environment (e.g., indoors).
+  The distinction between "On-Campus" and "Off-Campus" transactions relies on the device's GPS accuracy, which may vary depending on signal strength and environment (e.g., indoors)
 

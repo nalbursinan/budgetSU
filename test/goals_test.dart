@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:budget_su/screens/goals.dart'; // Doğrusu bu (Paket ismiyle)
-// import 'package:budget_su/screens/mainscreen.dart'; // Eğer testte kullanmıyorsan bu satırı silmen en iyisi!
+import 'package:budget_su/screens/goals.dart';
 
-// TEST İÇİN İZOLE MODEL (Unit Test İçin)
+// (for Unit Test)
 class TestGoal {
   String title;
   double amount;
@@ -12,7 +11,7 @@ class TestGoal {
 
 void main() {
   
-  //1. UNIT TEST (Matematik/Mantık)
+  //1. UNIT TEST (logic test)
   test('Goal calculation logic test', () {
     final goal = TestGoal(title: "New Laptop", amount: 1500.0);
     double saved = 500.0;
@@ -47,16 +46,16 @@ void main() {
       ),
     );
 
-    // Başlangıç kontrolü
+    // beginning control
     expect(find.text('Balance: \$0'), findsOneWidget);
 
-    // TIKLA
+    // click
     await tester.tap(find.byIcon(Icons.add));
     
-    // Ekranı güncelle
+    // update the screen
     await tester.pump();
 
-    // Sonuç kontrolü
+    // result check
     expect(find.text('Balance: \$100'), findsOneWidget);
   });
 }
