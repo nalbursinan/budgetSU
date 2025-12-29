@@ -139,3 +139,41 @@ We thank our CS310 instructors and TAs for their continuous guidance and feedbac
 ## 🧠 Summary
 **BudgetSU = Awareness + Simplicity + Control**  
 A smart and visual way to understand your spending — anytime, anywhere, on and off campus.
+
+---
+
+## 🧪 Testing Strategy 
+
+### Test Coverage Details
+
+* **1. Unit Test (Logic):**
+  * **File:** `test/goals_test.dart`
+  * **Purpose:** Verifies that the remaining amount calculation (Target - Saved) works correctly without UI dependencies.
+  
+* **2. Widget Test (Interaction):**
+  * **File:** `test/goals_test.dart`
+  * **Purpose:** Simulates a user tapping the "Add Money" button and verifies that the displayed balance updates correctly (e.g., from $0 to $100), ensuring State Management works as expected.
+
+### How to Run Tests
+
+To run the specific Unit and Widget tests for the Goals & State Management module, use the following command:
+
+```bash
+flutter test test/goals_test.dart
+```
+
+---
+
+## ⚠️ Known Limitations & Design Choices
+
+In accordance with the project requirements, we have identified the following limitations and intentional design decisions:
+
+* **Savings Overflow (Intentional Design):**
+  Users are allowed to add funds that exceed the set goal amount (e.g., saving $1400 for a $1000 target). This is a design choice to accommodate extra savings or price inflation. To prevent UI rendering errors, the visual progress bar is programmatically capped at 100% (1.0) while preserving the actual monetary value in the background.
+
+* **Firebase Synchronization:**
+  While the app supports local data entry, an active internet connection is required to synchronize data with the Cloud Firestore database and authenticate users via Firebase Auth.
+
+* **Geofencing Accuracy:**
+  The distinction between "On-Campus" and "Off-Campus" transactions relies on the device's GPS accuracy, which may vary depending on signal strength and environment (e.g., indoors)
+
