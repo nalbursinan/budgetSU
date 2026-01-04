@@ -889,8 +889,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
-            Text("${(percent * 100).toStringAsFixed(1)}%", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            Flexible(
+              child: Text(
+                label, 
+                style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              "${(percent * 100).toStringAsFixed(1)}%", 
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         const SizedBox(height: 4),
@@ -1005,9 +1015,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           const SizedBox(height: 12),
           Text(title, style: const TextStyle(color: Colors.white70, fontSize: 16)),
           const SizedBox(height: 6),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.bold)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.bold)),
+          ),
           const SizedBox(height: 6),
-          Text(subtitle, style: const TextStyle(color: Colors.white70)),
+          Text(subtitle, style: const TextStyle(color: Colors.white70), overflow: TextOverflow.ellipsis),
         ],
       ),
     );

@@ -4,6 +4,18 @@ import '../providers/transaction_provider.dart';
 import '../providers/settings_provider.dart';
 import '../models/transaction_model.dart';
 
+/// Format large numbers to prevent overflow
+String formatCurrency(double amount) {
+  if (amount >= 1000000000) {
+    return '\$${(amount / 1000000000).toStringAsFixed(2)}B';
+  } else if (amount >= 1000000) {
+    return '\$${(amount / 1000000).toStringAsFixed(2)}M';
+  } else if (amount >= 1000) {
+    return '\$${(amount / 1000).toStringAsFixed(2)}K';
+  }
+  return '\$${amount.toStringAsFixed(2)}';
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -13,6 +25,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  String? _lastNotificationThreshold; // Track last shown notification
+  double? _lastTodaySpending;
+  double? _lastDailyLimit;
 
   @override
   void initState() {
@@ -29,11 +44,130 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     super.dispose();
   }
 
+  void _checkBudgetNotifications(double todaySpending, double dailyLimit, bool budgetAlertsEnabled) {
+    if (!budgetAlertsEnabled || dailyLimit <= 0) {
+      _lastNotificationThreshold = null;
+      return;
+    }
+
+    // Only check if values changed
+    if (_lastTodaySpending == todaySpending && _lastDailyLimit == dailyLimit) {
+      return;
+    }
+
+    _lastTodaySpending = todaySpending;
+    _lastDailyLimit = dailyLimit;
+
+    final progress = todaySpending / dailyLimit;
+    String? currentThreshold;
+
+    // Determine current threshold
+    if (progress >= 1.0) {
+      currentThreshold = 'exceeded';
+    } else if (progress >= 0.8) {
+      currentThreshold = 'warning';
+    }
+
+    // Only show notification if threshold changed
+    if (currentThreshold != null && currentThreshold != _lastNotificationThreshold) {
+      _lastNotificationThreshold = currentThreshold;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        
+        if (currentThreshold == 'exceeded') {
+          _showBudgetExceededDialog(todaySpending, dailyLimit);
+        } else if (currentThreshold == 'warning') {
+          _showBudgetWarningSnackBar(todaySpending, dailyLimit);
+        }
+      });
+    } else if (currentThreshold == null) {
+      // Reset threshold when spending goes below warning level
+      _lastNotificationThreshold = null;
+    }
+  }
+
+  void _showBudgetWarningSnackBar(double todaySpending, double dailyLimit) {
+    final remaining = dailyLimit - todaySpending;
+    final percent = (todaySpending / dailyLimit * 100).toStringAsFixed(0);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange[300]),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'You\'ve used $percent% of your daily budget. \$${remaining.toStringAsFixed(2)} remaining.',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.orange[700],
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  void _showBudgetExceededDialog(double todaySpending, double dailyLimit) {
+    final exceeded = todaySpending - dailyLimit;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.red[600], size: 28),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Budget Exceeded!',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'You have exceeded your daily spending limit of \$${dailyLimit.toStringAsFixed(2)} by \$${exceeded.toStringAsFixed(2)}.\n\nConsider reducing your spending for the rest of the day.',
+          style: const TextStyle(fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red[700],
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text(
+              'OK',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<TransactionProvider, SettingsProvider>(
       builder: (context, transactionProvider, settingsProvider, child) {
         final dailyLimit = settingsProvider.dailySpendingLimit;
+        final todaySpending = transactionProvider.todaySpending;
+        final budgetAlertsEnabled = settingsProvider.budgetAlerts;
+        
+        // Check for budget notifications (only when values actually change)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _checkBudgetNotifications(todaySpending, dailyLimit, budgetAlertsEnabled);
+          }
+        });
         
         final theme = Theme.of(context);
         return Scaffold(
@@ -49,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 24),
                     _buildTodaySpendingCard(
                       dailyLimit: dailyLimit,
-                      todaySpending: transactionProvider.todaySpending,
+                      todaySpending: todaySpending,
                     ),
                     const SizedBox(height: 24),
                     _buildTotalBalanceCard(
@@ -247,12 +381,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              '\$${totalBalance.toStringAsFixed(2)}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                formatCurrency(totalBalance),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -284,12 +422,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             size: 20,
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            '\$${totalIncome.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                formatCurrency(totalIncome),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -318,12 +462,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             size: 20,
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            '\$${totalExpenses.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                formatCurrency(totalExpenses),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -393,18 +543,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          entry.key,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: theme.colorScheme.onSurface,
+                        Flexible(
+                          child: Text(
+                            entry.key,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Text(
-                          '\$${entry.value.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              formatCurrency(entry.value),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -499,16 +659,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     fontWeight: FontWeight.w600,
                                     color: Theme.of(context).colorScheme.onSurface,
                                   ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
                                 ),
                                 const SizedBox(height: 6),
                                 Row(
                                   children: [
-                                    Text(
-                                      tx.category,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                                        fontWeight: FontWeight.w500,
+                                    Flexible(
+                                      child: Text(
+                                        tx.category,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     if (!tx.isIncome) ...[
@@ -521,33 +686,36 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: isOnCampus
-                                              ? (Theme.of(context).brightness == Brightness.dark
-                                                  ? Colors.blue.withOpacity(0.2)
-                                                  : const Color(0xFFEFF6FF))
-                                              : (Theme.of(context).brightness == Brightness.dark
-                                                  ? Colors.purple.withOpacity(0.2)
-                                                  : const Color(0xFFFAF5FF)),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          tx.campusLocation,
-                                          style: TextStyle(
-                                            fontSize: 12,
+                                      Flexible(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
                                             color: isOnCampus
-                                                ? Theme.of(context).brightness == Brightness.dark
-                                                    ? Colors.blue[300]!
-                                                    : const Color(0xFF2563EB)
-                                                : Theme.of(context).brightness == Brightness.dark
-                                                    ? Colors.purple[300]!
-                                                    : const Color(0xFF9333EA),
-                                            fontWeight: FontWeight.w600,
+                                                ? (Theme.of(context).brightness == Brightness.dark
+                                                    ? Colors.blue.withOpacity(0.2)
+                                                    : const Color(0xFFEFF6FF))
+                                                : (Theme.of(context).brightness == Brightness.dark
+                                                    ? Colors.purple.withOpacity(0.2)
+                                                    : const Color(0xFFFAF5FF)),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            tx.campusLocation,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: isOnCampus
+                                                  ? Theme.of(context).brightness == Brightness.dark
+                                                      ? Colors.blue[300]!
+                                                      : const Color(0xFF2563EB)
+                                                  : Theme.of(context).brightness == Brightness.dark
+                                                      ? Colors.purple[300]!
+                                                      : const Color(0xFF9333EA),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ),
@@ -557,14 +725,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               ],
                             ),
                           ),
-                          Text(
-                            '${tx.isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: tx.isIncome
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFEF4444),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                '${tx.isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: tx.isIncome
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFEF4444),
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -754,12 +929,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            amount,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              amount,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
           ),
         ],
