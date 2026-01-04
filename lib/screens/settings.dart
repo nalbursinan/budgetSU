@@ -29,7 +29,7 @@ class SettingsScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onBackground,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -37,7 +37,7 @@ class SettingsScreen extends StatelessWidget {
                       "Manage your preferences and account",
                       style: TextStyle(
                         fontSize: 16,
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -65,7 +65,7 @@ class SettingsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.blue.withOpacity(0.3),
+                            color: Colors.blue.withValues(alpha: 0.3),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -112,7 +112,7 @@ class SettingsScreen extends StatelessWidget {
                                   email,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -122,7 +122,7 @@ class SettingsScreen extends StatelessWidget {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: const Text(
@@ -146,7 +146,7 @@ class SettingsScreen extends StatelessWidget {
                               color: Colors.white,
                             ),
                             style: IconButton.styleFrom(
-                              backgroundColor: Colors.white.withOpacity(0.2),
+                              backgroundColor: Colors.white.withValues(alpha: 0.2),
                             ),
                           ),
                         ],
@@ -238,7 +238,7 @@ class SettingsScreen extends StatelessWidget {
                     'Made with ❤️ for students',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -248,7 +248,7 @@ class SettingsScreen extends StatelessWidget {
                     '© 2025 BudgetSU',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                     ),
                   ),
                 ),
@@ -295,7 +295,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -367,14 +367,14 @@ class SettingsScreen extends StatelessWidget {
                 '\$10',
                 style: TextStyle(
                   fontSize: 12,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               Text(
                 '\$200',
                 style: TextStyle(
                   fontSize: 12,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -384,7 +384,7 @@ class SettingsScreen extends StatelessWidget {
             'Set a daily spending limit to help control your expenses and stay within budget',
             style: TextStyle(
               fontSize: 13,
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               height: 1.4,
             ),
           ),
@@ -403,7 +403,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -432,7 +432,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -488,7 +488,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -531,7 +531,7 @@ class SettingsScreen extends StatelessWidget {
                       'Version 1.0.0',
                       style: TextStyle(
                         fontSize: 13,
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -544,7 +544,7 @@ class SettingsScreen extends StatelessWidget {
             'Track your expenses, set budgets, and achieve your financial goals. Built for students to manage their finances effectively.',
             style: TextStyle(
               fontSize: 13,
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               height: 1.5,
             ),
           ),
@@ -561,7 +561,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -573,7 +573,7 @@ class SettingsScreen extends StatelessWidget {
             context,
             'Privacy Policy',
             Icons.privacy_tip_outlined,
-            () {},
+            () => _showPrivacyPolicy(context),
             isFirst: true,
           ),
           const Divider(height: 1),
@@ -581,22 +581,302 @@ class SettingsScreen extends StatelessWidget {
             context,
             'Terms of Service',
             Icons.description_outlined,
-            () {},
+            () => _showTermsOfService(context),
           ),
           const Divider(height: 1),
           _buildListTile(
             context,
             'Help & Support',
             Icons.help_outline,
-            () {},
+            () => _showHelpSupport(context),
           ),
           const Divider(height: 1),
           _buildListTile(
             context,
             'Rate This App',
             Icons.star_outline,
-            () {},
+            () => _showRateApp(context),
             isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyPolicy(BuildContext context) {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.privacy_tip, color: Colors.blue[600], size: 28),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Privacy Policy',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            'BudgetSU Privacy Policy\n\n'
+            'Last Updated: January 2025\n\n'
+            '1. Data Collection\n'
+            'We collect only the information necessary to provide our services:\n'
+            '• Email address for account creation\n'
+            '• Transaction data you enter\n'
+            '• App preferences and settings\n\n'
+            '2. Data Storage\n'
+            'Your data is securely stored in Firebase and is only accessible by you. '
+            'We do not share your personal information with third parties.\n\n'
+            '3. Data Security\n'
+            'We use industry-standard encryption to protect your data. '
+            'All transactions are stored securely in Firebase Firestore.\n\n'
+            '4. Your Rights\n'
+            'You can delete your account and all associated data at any time through the app settings.\n\n'
+            '5. Contact\n'
+            'For privacy concerns, please contact us through the Help & Support section.',
+            style: const TextStyle(fontSize: 14, height: 1.5),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTermsOfService(BuildContext context) {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.description, color: Colors.blue[600], size: 28),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Terms of Service',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            'BudgetSU Terms of Service\n\n'
+            'Last Updated: January 2025\n\n'
+            '1. Acceptance of Terms\n'
+            'By using BudgetSU, you agree to these terms and conditions.\n\n'
+            '2. Use of Service\n'
+            '• You must be at least 13 years old to use this app\n'
+            '• You are responsible for maintaining the security of your account\n'
+            '• You agree not to misuse the app or attempt to access other users\' data\n\n'
+            '3. User Content\n'
+            'You retain ownership of all data you enter. By using the app, you grant us '
+            'permission to store and process your data to provide the service.\n\n'
+            '4. Limitation of Liability\n'
+            'BudgetSU is provided "as is" without warranties. We are not responsible '
+            'for any financial decisions made based on the app\'s information.\n\n'
+            '5. Changes to Terms\n'
+            'We reserve the right to modify these terms at any time. '
+            'Continued use constitutes acceptance of changes.',
+            style: const TextStyle(fontSize: 14, height: 1.5),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showHelpSupport(BuildContext context) {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.help_outline, color: Colors.blue[600], size: 28),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Help & Support',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Frequently Asked Questions',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              _buildFAQItem(
+                dialogContext,
+                'How do I add a transaction?',
+                'Tap the + button on the Transactions screen and fill in the details.',
+              ),
+              const SizedBox(height: 12),
+              _buildFAQItem(
+                dialogContext,
+                'How do I set a daily spending limit?',
+                'Go to Settings > Spending Limits and adjust the slider.',
+              ),
+              const SizedBox(height: 12),
+              _buildFAQItem(
+                dialogContext,
+                'Can I edit or delete transactions?',
+                'Yes! Tap on any transaction to edit it, or swipe left to delete.',
+              ),
+              const SizedBox(height: 12),
+              _buildFAQItem(
+                dialogContext,
+                'How do I change my theme?',
+                'Go to Settings > Appearance and toggle Dark Mode.',
+              ),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 16),
+              const Text(
+                'Need More Help?',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'If you need additional assistance, please contact our support team at:\n'
+                'support@budgetsu.app',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFAQItem(BuildContext context, String question, String answer) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          question,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          answer,
+          style: TextStyle(
+            fontSize: 13,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showRateApp(BuildContext context) {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.star, color: Colors.amber[600], size: 28),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Rate BudgetSU',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'We hope you\'re enjoying BudgetSU!',
+              style: TextStyle(fontSize: 15),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                return Icon(
+                  Icons.star,
+                  color: Colors.amber[400],
+                  size: 32,
+                );
+              }),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Your feedback helps us improve the app. '
+              'Thank you for using BudgetSU!',
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Maybe Later'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Thank you for your feedback!'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[600],
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Rate Now'),
           ),
         ],
       ),
@@ -611,7 +891,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -647,7 +927,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+              Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
             ],
           ),
         ),
@@ -674,7 +954,7 @@ class SettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: theme.brightness == Brightness.dark
-                  ? Colors.blue.withOpacity(0.2)
+                  ? Colors.blue.withValues(alpha: 0.2)
                   : Colors.blue[50],
               borderRadius: BorderRadius.circular(8),
             ),
@@ -704,7 +984,7 @@ class SettingsScreen extends StatelessWidget {
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -745,7 +1025,7 @@ class SettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: theme.brightness == Brightness.dark
-                    ? Colors.blue.withOpacity(0.2)
+                    ? Colors.blue.withValues(alpha: 0.2)
                     : Colors.blue[50],
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -770,7 +1050,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ],
         ),

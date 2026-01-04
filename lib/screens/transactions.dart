@@ -3,6 +3,18 @@ import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
 import '../models/transaction_model.dart';
 
+/// Format large numbers to prevent overflow
+String formatCurrency(double amount) {
+  if (amount >= 1000000000) {
+    return '\$${(amount / 1000000000).toStringAsFixed(2)}B';
+  } else if (amount >= 1000000) {
+    return '\$${(amount / 1000000).toStringAsFixed(2)}M';
+  } else if (amount >= 1000) {
+    return '\$${(amount / 1000).toStringAsFixed(2)}K';
+  }
+  return '\$${amount.toStringAsFixed(2)}';
+}
+
 class AppColors {
   static Color background(BuildContext context) => Theme.of(context).scaffoldBackgroundColor;
 
@@ -117,6 +129,21 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     return "${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}";
   }
 
+  DateTime? _parseDateString(String dateStr) {
+    try {
+      final parts = dateStr.split('.');
+      if (parts.length == 3) {
+        final day = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
+        final year = int.parse(parts[2]);
+        return DateTime(year, month, day);
+      }
+    } catch (e) {
+      return null;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<TransactionProvider>(
@@ -129,7 +156,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           final key = formatDate(tx.date);
           groups.putIfAbsent(key, () => []).add(tx);
         }
-        final dates = groups.keys.toList()..sort((a, b) => b.compareTo(a));
+        
+        // Sort dates properly by parsing them as DateTime
+        final dates = groups.keys.toList()..sort((a, b) {
+          final dateA = _parseDateString(a);
+          final dateB = _parseDateString(b);
+          if (dateA == null || dateB == null) {
+            return b.compareTo(a); // Fallback to string comparison
+          }
+          return dateB.compareTo(dateA); // Newest first (descending)
+        });
 
         final theme = Theme.of(context);
         return Scaffold(
@@ -230,7 +266,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             ),
                             const SizedBox(height: 10),
 
-                            for (var tx in groups[date]!) ...[
+                            for (var tx in (groups[date]!..sort((a, b) => b.date.compareTo(a.date)))) ...[
                               TransactionCard(
                                 tx: tx,
                                 onDelete: () => _deleteTransaction(tx),
@@ -400,6 +436,8 @@ class TransactionCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
                     ),
                     const SizedBox(height: 6),
                     Row(
@@ -421,39 +459,44 @@ class TransactionCard extends StatelessWidget {
                               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                             )),
                         const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: onCampus
-                                ? AppColors.onCampusBg(context)
-                                : AppColors.offCampusBg(context),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                onCampus
-                                    ? Icons.apartment
-                                    : Icons.location_on_outlined,
-                                size: 14,
-                                color: onCampus
-                                    ? AppColors.onCampusText(context)
-                                    : AppColors.offCampusText(context),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                tx.campusLocation,
-                                style: TextStyle(
-                                  fontSize: 12,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: onCampus
+                                  ? AppColors.onCampusBg(context)
+                                  : AppColors.offCampusBg(context),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  onCampus
+                                      ? Icons.apartment
+                                      : Icons.location_on_outlined,
+                                  size: 14,
                                   color: onCampus
                                       ? AppColors.onCampusText(context)
                                       : AppColors.offCampusText(context),
-                                  fontWeight: FontWeight.w500,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    tx.campusLocation,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: onCampus
+                                          ? AppColors.onCampusText(context)
+                                          : AppColors.offCampusText(context),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -462,19 +505,26 @@ class TransactionCard extends StatelessWidget {
                 ),
               ),
 
+              const SizedBox(width: 8),
               // Amount
-              Text(
-                "${tx.isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}",
-                style: TextStyle(
-                  color: tx.isIncome
-                      ? (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.green[400]
-                          : Colors.green[600])
-                      : (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.red[400]
-                          : Colors.red[600]),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    "${tx.isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      color: tx.isIncome
+                          ? (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.green[400]
+                              : Colors.green[600])
+                          : (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.red[400]
+                              : Colors.red[600]),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
                 ),
               ),
             ],

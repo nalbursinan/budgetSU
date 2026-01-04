@@ -42,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     if (!_formKey.currentState!.validate()) return;
 
     if (!_agreeToTerms) {
-      _showErrorSnackBar('Please agree to the Terms of Service and Privacy Policy to continue.');
+      _showErrorSnackBar('Lütfen kullanım koşullarını kabul edin');
       return;
     }
 
@@ -54,36 +54,12 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
     if (mounted) {
       if (success) {
-        _showSuccessSnackBar('Account created successfully! Welcome to BudgetSU!');
+        _showSuccessSnackBar('Hesap oluşturuldu!');
         Navigator.pop(context);
       } else {
-        final errorMessage = authProvider.errorMessage ?? 'Registration failed';
-        _showErrorSnackBar(_getUserFriendlyErrorMessage(errorMessage));
+        _showErrorSnackBar(authProvider.errorMessage ?? 'Kayıt başarısız');
       }
     }
-  }
-
-  String _getUserFriendlyErrorMessage(String error) {
-    // Map Firebase errors to more user-friendly messages
-    if (error.contains('email-already-in-use') || error.contains('already exists')) {
-      return 'An account with this email already exists. Please sign in instead.';
-    }
-    if (error.contains('weak-password') || error.contains('stronger password')) {
-      return 'Password is too weak. Please use at least 6 characters with a mix of letters and numbers.';
-    }
-    if (error.contains('invalid-email') || error.contains('not valid')) {
-      return 'Please enter a valid email address (e.g., name@example.com).';
-    }
-    if (error.contains('too-many-requests')) {
-      return 'Too many sign-up attempts. Please wait a few minutes and try again.';
-    }
-    if (error.contains('network') || error.contains('connection')) {
-      return 'Unable to connect. Please check your internet connection and try again.';
-    }
-    if (error.contains('operation-not-allowed')) {
-      return 'Email/password sign-up is currently disabled. Please contact support.';
-    }
-    return error; // Return original if no match
   }
 
   void _showErrorSnackBar(String message) {
@@ -124,9 +100,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -153,42 +128,36 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   Widget _buildBackButton() {
-    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () => Navigator.pop(context),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: theme.cardColor,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(theme.brightness == Brightness.dark ? 0.3 : 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Icon(
-          Icons.arrow_back_ios_new,
-          color: theme.colorScheme.onSurface,
-          size: 20,
-        ),
+        child: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
       ),
     );
   }
 
   Widget _buildHeader() {
-    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Logo with purple-blue gradient (reversed)
+        // Logo - Mor gradient
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF9333EA), Color(0xFF2563EB)],
+              colors: [Color(0xFF9333EA), Color(0xFFA855F7)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -204,20 +173,20 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           child: const Icon(Icons.person_add_alt_1, color: Colors.white, size: 40),
         ),
         const SizedBox(height: 24),
-        Text(
-          'Create Account',
+        const Text(
+          'Hesap Oluştur',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onBackground,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          'Sign up to start managing your campus budget',
+        const Text(
+          'Kampüs bütçenizi yönetmeye başlayın',
           style: TextStyle(
             fontSize: 16,
-            color: theme.colorScheme.onSurface.withOpacity(0.7),
+            color: Colors.grey,
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -226,17 +195,16 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   Widget _buildRegisterCard() {
-    final theme = Theme.of(context);
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: theme.cardColor,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(theme.brightness == Brightness.dark ? 0.3 : 0.05),
+                color: Colors.black.withOpacity(0.05),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -248,65 +216,50 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Email
-                Text(
+                const Text(
                   'Email',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  decoration: _inputDecoration(hint: 'Enter your email', icon: Icons.email_outlined),
+                  decoration: _inputDecoration(hint: 'Email adresinizi girin', icon: Icons.email_outlined),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email address';
-                    }
+                    if (value == null || value.isEmpty) return 'Email gerekli';
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return 'Please enter a valid email address (e.g., name@example.com)';
+                      return 'Geçerli bir email girin';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
 
-                // Password
-                Text(
-                  'Password',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
+                // Şifre
+                const Text(
+                  'Şifre',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.next,
-                  onChanged: (_) => setState(() {}),
                   decoration: _inputDecoration(
-                    hint: 'Create a password',
+                    hint: 'Şifre oluşturun',
                     icon: Icons.lock_outlined,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: Colors.grey,
                       ),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Password is required';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters long';
-                    }
+                    if (value == null || value.isEmpty) return 'Şifre gerekli';
+                    if (value.length < 6) return 'Şifre en az 6 karakter olmalı';
                     return null;
                   },
                 ),
@@ -314,14 +267,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 _buildPasswordStrength(),
                 const SizedBox(height: 20),
 
-                // Confirm Password
-                Text(
-                  'Confirm Password',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
+                // Şifre Onay
+                const Text(
+                  'Şifre Tekrar',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -330,23 +279,19 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _handleRegister(),
                   decoration: _inputDecoration(
-                    hint: 'Confirm your password',
+                    hint: 'Şifrenizi tekrar girin',
                     icon: Icons.lock_outlined,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: Colors.grey,
                       ),
                       onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please confirm your password';
-                    }
-                    if (value != _passwordController.text) {
-                      return 'Passwords do not match. Please try again.';
-                    }
+                    if (value == null || value.isEmpty) return 'Şifre tekrarı gerekli';
+                    if (value != _passwordController.text) return 'Şifreler eşleşmiyor';
                     return null;
                   },
                 ),
@@ -369,29 +314,16 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     const SizedBox(width: 12),
                     Expanded(
                       child: RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
-                            height: 1.4,
-                          ),
+                        text: const TextSpan(
+                          style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.4),
                           children: [
-                            const TextSpan(text: 'I agree to the '),
+                            TextSpan(text: 'Kullanım Koşulları'),
+                            TextSpan(text: ' ve '),
                             TextSpan(
-                              text: 'Terms of Service',
-                              style: TextStyle(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              text: 'Gizlilik Politikası',
+                              style: TextStyle(color: Color(0xFF9333EA), fontWeight: FontWeight.w600),
                             ),
-                            const TextSpan(text: ' and '),
-                            TextSpan(
-                              text: 'Privacy Policy',
-                              style: TextStyle(
-                                color: theme.colorScheme.secondary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            TextSpan(text: "'nı kabul ediyorum"),
                           ],
                         ),
                       ),
@@ -400,44 +332,28 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 ),
                 const SizedBox(height: 24),
 
-                // Register Button with gradient
+                // Register Button
                 SizedBox(
                   width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF9333EA), Color(0xFF2563EB)],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF9333EA).withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                  child: ElevatedButton(
+                    onPressed: authProvider.isLoading ? null : _handleRegister,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF9333EA),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
                     ),
-                    child: ElevatedButton(
-                      onPressed: authProvider.isLoading ? null : _handleRegister,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: authProvider.isLoading
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
-                            )
-                          : const Text(
-                              'Create Account',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
-                            ),
-                    ),
+                    child: authProvider.isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                          )
+                        : const Text(
+                            'Hesap Oluştur',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
                   ),
                 ),
               ],
@@ -463,28 +379,26 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     String label;
     if (strength <= 1) {
       color = const Color(0xFFEF4444);
-      label = 'Weak';
+      label = 'Zayıf';
     } else if (strength <= 2) {
       color = const Color(0xFFF59E0B);
-      label = 'Fair';
+      label = 'Orta';
     } else if (strength <= 3) {
       color = const Color(0xFF10B981);
-      label = 'Good';
+      label = 'İyi';
     } else {
       color = const Color(0xFF059669);
-      label = 'Strong';
+      label = 'Güçlü';
     }
 
     return Row(
       children: [
         Expanded(
-            child: ClipRRect(
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: strength / 5,
-              backgroundColor: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[800]
-                  : Colors.grey[200],
+              backgroundColor: Colors.grey[200],
               valueColor: AlwaysStoppedAnimation<Color>(color),
               minHeight: 4,
             ),
@@ -497,23 +411,16 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   Widget _buildLoginPrompt() {
-    final theme = Theme.of(context);
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Already have an account? ',
-            style: TextStyle(
-              fontSize: 15,
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
-            ),
-          ),
+          const Text('Zaten hesabınız var mı? ', style: TextStyle(fontSize: 15, color: Colors.grey)),
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: const Text(
-              'Sign In',
-              style: TextStyle(fontSize: 15, color: Color(0xFF2563EB), fontWeight: FontWeight.w600),
+              'Giriş Yap',
+              style: TextStyle(fontSize: 15, color: Color(0xFF9333EA), fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -526,25 +433,13 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     required IconData icon,
     Widget? suffixIcon,
   }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(
-        color: theme.colorScheme.onSurface.withOpacity(0.5),
-        fontSize: 15,
-      ),
-      prefixIcon: Icon(
-        icon,
-        color: theme.colorScheme.onSurface.withOpacity(0.6),
-        size: 22,
-      ),
+      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 15),
+      prefixIcon: Icon(icon, color: Colors.grey[400], size: 22),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: isDark
-          ? theme.colorScheme.surface.withOpacity(0.5)
-          : const Color(0xFFF5F5F5),
+      fillColor: const Color(0xFFF5F5F5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
@@ -555,24 +450,15 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(
-          color: theme.colorScheme.primary,
-          width: 2,
-        ),
+        borderSide: const BorderSide(color: Color(0xFF9333EA), width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(
-          color: theme.colorScheme.error,
-          width: 1,
-        ),
+        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(
-          color: theme.colorScheme.error,
-          width: 2,
-        ),
+        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
